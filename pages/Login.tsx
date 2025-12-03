@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -19,7 +18,9 @@ export const Login: React.FC = () => {
   const location = useLocation();
 
   // Get the previous path or default to home
-  const from = (location.state as any)?.from?.pathname || '/';
+  // Ensure we don't redirect back to login page itself
+  const fromPath = (location.state as any)?.from?.pathname;
+  const from = fromPath && fromPath !== '/login' ? fromPath : '/';
 
   const countryCodes = [
     { code: '+91', country: 'IN' },
@@ -49,9 +50,9 @@ export const Login: React.FC = () => {
       
       // Redirect logic
       if (!isRegistering && role === 'admin') {
-          navigate('/admin');
+          navigate('/admin', { replace: true });
       } else {
-          navigate(from);
+          navigate(from, { replace: true });
       }
     } catch (err: any) {
       setError(err.message || 'Authentication failed');
