@@ -1,7 +1,8 @@
 import { GoogleGenAI, GenerateContentResponse, Chat } from "@google/genai";
 import { Product } from '../types';
 
-const apiKey = process.env.API_KEY || '';
+// Safely access process.env to prevent "process is not defined" crashes in browser environments
+const apiKey = (typeof process !== 'undefined' && process.env && process.env.API_KEY) ? process.env.API_KEY : '';
 const ai = new GoogleGenAI({ apiKey });
 
 const SYSTEM_INSTRUCTION = `
