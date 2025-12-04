@@ -18,6 +18,9 @@ import { AdminDashboard } from './pages/AdminDashboard';
 import { MyOrders } from './pages/MyOrders';
 import { ContactUs } from './pages/ContactUs';
 import { ReturnPolicy } from './pages/ReturnPolicy';
+import { ShippingPolicy } from './pages/ShippingPolicy';
+import { PrivacyPolicy } from './pages/PrivacyPolicy';
+import { Terms } from './pages/Terms';
 import { GeminiStylist } from './components/GeminiStylist';
 
 const ScrollToTop = () => {
@@ -47,18 +50,19 @@ const Footer = () => (
         </ul>
       </div>
       <div>
-        <h3 className="text-white font-semibold mb-4">Support</h3>
+        <h3 className="text-white font-semibold mb-4">Policies</h3>
         <ul className="space-y-2 text-sm">
-          <li><a href="#" className="hover:text-royal-500 transition-colors">Order Tracking</a></li>
-          <li><Link to="/return-policy" className="hover:text-royal-500 transition-colors">Returns & Exchanges</Link></li>
-          <li><a href="#" className="hover:text-royal-500 transition-colors">Saree Care Guide</a></li>
-          <li><Link to="/contact" className="hover:text-royal-500 transition-colors">Contact Us</Link></li>
+          <li><Link to="/return-policy" className="hover:text-royal-500 transition-colors">Cancellation & Refunds</Link></li>
+          <li><Link to="/shipping-policy" className="hover:text-royal-500 transition-colors">Shipping Policy</Link></li>
+          <li><Link to="/privacy-policy" className="hover:text-royal-500 transition-colors">Privacy Policy</Link></li>
+          <li><Link to="/terms-conditions" className="hover:text-royal-500 transition-colors">Terms & Conditions</Link></li>
         </ul>
       </div>
        <div>
         <h3 className="text-white font-semibold mb-4">Contact</h3>
         <p className="text-sm mb-2">Bangalore, Karnataka, India</p>
-        <p className="text-sm">hello@flyingpopat.com</p>
+        <p className="text-sm"><a href="mailto:hello@flyingpopat.com" className="hover:text-royal-500">hello@flyingpopat.com</a></p>
+        <p className="text-sm mt-1"><Link to="/contact" className="hover:text-royal-500 transition-colors underline">Contact Form</Link></p>
         <p className="text-sm mt-4 text-xs opacity-50">© 2024 FlyingPopat. All rights reserved.</p>
       </div>
     </div>
@@ -89,7 +93,13 @@ const App: React.FC = () => {
                           <Route path="/my-orders" element={<MyOrders />} />
                           <Route path="/admin" element={<AdminDashboard />} />
                           <Route path="/contact" element={<ContactUs />} />
+                          
+                          {/* Policy Pages */}
                           <Route path="/return-policy" element={<ReturnPolicy />} />
+                          <Route path="/shipping-policy" element={<ShippingPolicy />} />
+                          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                          <Route path="/terms-conditions" element={<Terms />} />
+                          
                           <Route path="*" element={<Home />} />
                         </Routes>
                       </div>

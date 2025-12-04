@@ -7,6 +7,13 @@ import { useOrders } from '../context/OrderContext';
 import { ArrowLeft, CreditCard, Truck, CheckCircle, ShieldCheck } from 'lucide-react';
 import { OrderStatus } from '../types';
 
+// Add type definition for Razorpay on window object
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 export const Checkout: React.FC = () => {
   const { cart, cartSubtotal, discountAmount, finalTotal, appliedCoupon, clearCart } = useCart();
   const { user, isAuthenticated, isAdmin } = useAuth();
@@ -46,38 +53,87 @@ export const Checkout: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const createOrder = (paymentId?: string) => {
+      // Create Items Summary String
+      const itemsSummary = cart.map(item => `${item.name} (${item.quantity})`).join(', ');
+
+      // Create New Order
+      const newOrder = {
+        id: `#ORD-${Math.floor(1000 + Math.random() * 9000)}`,
+        customerName: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        city: formData.city,
+        zip: formData.zip,
+        date: new Date().toISOString().split('T')[0],
+        status: 'Pending' as OrderStatus,
+        total: finalTotal,
+        subtotal: cartSubtotal,
+        discount: discountAmount,
+        couponCode: appliedCoupon?.code,
+        itemsSummary: itemsSummary,
+        paymentMethod: paymentMethod,
+        paymentId: paymentId
+      };
+
+      addOrder(newOrder);
+      clearCart();
+      setIsProcessing(false);
+      setIsSuccess(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
 
-    // Simulate Payment Processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    if (paymentMethod === 'cod') {
+        // Simple delay for COD
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        createOrder();
+    } else {
+        // RAZORPAY INTEGRATION
+        const options = {
+            key: process.env.RAZORPAY_KEY_ID || 'rzp_test_YOUR_KEY_HERE', // Fallback if env not set
+            amount: finalTotal * 100, // Amount in paise
+            currency: "INR",
+            name: "FlyingPopat",
+            description: "Purchase of authentic weaves",
+            image: "https://ui-avatars.com/api/?name=Flying+Popat&background=db2777&color=fff",
+            handler: function (response: any) {
+                // Payment Success
+                console.log("Payment Successful:", response.razorpay_payment_id);
+                createOrder(response.razorpay_payment_id);
+            },
+            prefill: {
+                name: formData.name,
+                email: formData.email,
+                contact: formData.phone
+            },
+            theme: {
+                color: "#db2777"
+            },
+            modal: {
+                ondismiss: function() {
+                    setIsProcessing(false);
+                    alert("Payment cancelled.");
+                }
+            }
+        };
 
-    // Create Items Summary String
-    const itemsSummary = cart.map(item => `${item.name} (${item.quantity})`).join(', ');
-
-    // Create New Order
-    const newOrder = {
-      id: `#ORD-${Math.floor(1000 + Math.random() * 9000)}`,
-      customerName: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      address: formData.address,
-      city: formData.city,
-      zip: formData.zip,
-      date: new Date().toISOString().split('T')[0],
-      status: 'Pending' as OrderStatus,
-      total: finalTotal,
-      subtotal: cartSubtotal,
-      discount: discountAmount,
-      couponCode: appliedCoupon?.code,
-      itemsSummary: itemsSummary
-    };
-
-    addOrder(newOrder);
-    clearCart();
-    setIsProcessing(false);
-    setIsSuccess(true);
+        try {
+            const rzp1 = new window.Razorpay(options);
+            rzp1.on('payment.failed', function (response: any){
+                alert("Payment Failed: " + response.error.description);
+                setIsProcessing(false);
+            });
+            rzp1.open();
+        } catch (error) {
+            console.error("Razorpay Error:", error);
+            alert("Failed to initiate payment. Please check your internet connection.");
+            setIsProcessing(false);
+        }
+    }
   };
 
   if (isSuccess) {
@@ -88,9 +144,15 @@ export const Checkout: React.FC = () => {
             <CheckCircle className="text-green-600 w-10 h-10" />
           </div>
           <h2 className="font-serif text-3xl font-bold text-stone-900 mb-4">Order Placed!</h2>
-          <p className="text-stone-600 mb-8">
-            Thank you for your purchase, {formData.name}. Your order has been received and is being processed.
+          <p className="text-stone-600 mb-2">
+            Thank you for your purchase, {formData.name}.
           </p>
+          {paymentMethod === 'online' && (
+              <p className="text-sm text-green-600 font-bold mb-6">Payment Verified Successfully</p>
+          )}
+          {paymentMethod === 'cod' && (
+              <p className="text-sm text-orange-600 font-bold mb-6">Please keep ₹{finalTotal} ready at delivery.</p>
+          )}
           <button 
             onClick={() => navigate('/catalog')}
             className="w-full bg-royal-700 text-white py-3 rounded-lg font-bold hover:bg-royal-800 transition-colors"

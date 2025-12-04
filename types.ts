@@ -81,6 +81,8 @@ export interface Order {
   discount?: number;
   couponCode?: string;
   itemsSummary: string;
+  paymentMethod: 'cod' | 'online';
+  paymentId?: string; // Razorpay Payment ID
 }
 
 export type FeedbackType = 'cancellation' | 'review';
