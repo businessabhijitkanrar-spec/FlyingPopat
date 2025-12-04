@@ -25,7 +25,7 @@ export const Home: React.FC = () => {
         
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
           <span className="inline-block py-1 px-3 border border-white/30 rounded-full text-xs font-semibold tracking-wider text-white uppercase mb-4 backdrop-blur-sm">
-            Est. 2024
+            Est. 1957
           </span>
           <h1 className="font-serif text-5xl md:text-7xl text-white font-bold mb-6 leading-tight">
             Weaving Tradition <br /> Into <span className="text-gold-400 italic">Elegance</span>
@@ -60,7 +60,7 @@ export const Home: React.FC = () => {
           
           <div className="text-center mt-12">
             <Link to="/catalog" className="inline-flex items-center text-royal-700 font-semibold hover:text-royal-900 transition-colors border-b-2 border-royal-700 pb-1">
-              View All Sarees <ArrowRight size={16} className="ml-2" />
+              Show All Collection <ArrowRight size={16} className="ml-2" />
             </Link>
           </div>
         </div>

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ArrowLeft, Truck, Globe, Clock, PackageCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -71,7 +72,7 @@ export const ShippingPolicy: React.FC = () => {
 
              <section className="border-t border-stone-100 pt-6">
                 <p className="text-sm text-stone-500">
-                    If you haven’t received your order within 10 days of receiving your shipping confirmation email, please contact us at <a href="mailto:support@flyingpopat.com" className="text-royal-700 hover:underline">support@flyingpopat.com</a> with your name and order number, and we will look into it for you.
+                    If you haven’t received your order within 10 days of receiving your shipping confirmation email, please contact us at <a href="mailto:help.flyingpopat@gmail.com" className="text-royal-700 hover:underline">help.flyingpopat@gmail.com</a> with your name and order number, and we will look into it for you.
                 </p>
             </section>
 

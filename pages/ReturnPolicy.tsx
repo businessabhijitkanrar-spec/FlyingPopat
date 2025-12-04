@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ArrowLeft, CheckCircle, AlertCircle, Clock, XCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -116,7 +117,7 @@ export const ReturnPolicy: React.FC = () => {
 
             <div className="border-t border-stone-100 pt-6">
                 <p className="text-sm text-stone-500">
-                    For further assistance, please contact us at <a href="mailto:support@flyingpopat.com" className="text-royal-700 hover:underline">support@flyingpopat.com</a>.
+                    For further assistance, please contact us at <a href="mailto:help.flyingpopat@gmail.com" className="text-royal-700 hover:underline">help.flyingpopat@gmail.com</a>.
                 </p>
             </div>
 

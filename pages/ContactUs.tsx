@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Send, Loader2 } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, Loader2, MessageCircle } from 'lucide-react';
 import { useInquiry } from '../context/InquiryContext';
 
 export const ContactUs: React.FC = () => {
@@ -55,11 +56,11 @@ export const ContactUs: React.FC = () => {
           <div className="md:col-span-1 space-y-6">
             <div className="bg-white p-6 rounded-xl shadow-sm border border-stone-100 flex items-start gap-4 hover:shadow-md transition-shadow">
               <div className="p-3 bg-royal-50 text-royal-700 rounded-lg">
-                <Phone size={24} />
+                <MessageCircle size={24} />
               </div>
               <div>
-                <h3 className="font-bold text-stone-900 mb-1">Phone</h3>
-                <p className="text-sm text-stone-600">+91 98765 43210</p>
+                <h3 className="font-bold text-stone-900 mb-1">WhatsApp</h3>
+                <p className="text-sm text-stone-600">+91 9674283413</p>
                 <p className="text-xs text-stone-400 mt-1">Mon-Sat, 9am - 6pm IST</p>
               </div>
             </div>
@@ -70,8 +71,7 @@ export const ContactUs: React.FC = () => {
               </div>
               <div>
                 <h3 className="font-bold text-stone-900 mb-1">Email</h3>
-                <p className="text-sm text-stone-600">hello@flyingpopat.com</p>
-                <p className="text-sm text-stone-600">support@flyingpopat.com</p>
+                <p className="text-sm text-stone-600">help.flyingpopat@gmail.com</p>
               </div>
             </div>
 
@@ -83,8 +83,8 @@ export const ContactUs: React.FC = () => {
                 <h3 className="font-bold text-stone-900 mb-1">Store Address</h3>
                 <p className="text-sm text-stone-600">
                   FlyingPopat Boutique,<br />
-                  123 Silk Road, Indiranagar,<br />
-                  Bangalore, Karnataka - 560038
+                  Hirapur, Howrah,<br />
+                  West Bengal - 711310
                 </p>
               </div>
             </div>
