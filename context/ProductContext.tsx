@@ -7,12 +7,14 @@ import {
   onSnapshot, 
   deleteDoc, 
   doc, 
-  setDoc
+  setDoc,
+  updateDoc
 } from 'firebase/firestore';
 
 interface ProductContextType {
   products: Product[];
   addProduct: (product: Product) => void;
+  updateProduct: (product: Product) => void;
   deleteProduct: (productId: string) => void;
 }
 
@@ -78,6 +80,23 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
+  const updateProduct = async (product: Product) => {
+    if (isFirebaseConfigured && db) {
+      try {
+        await setDoc(doc(db, "products", product.id), product);
+      } catch (error) {
+        console.error("Error updating product:", error);
+      }
+    } else {
+      // Local Mock
+      setProducts(prev => {
+        const updated = prev.map(p => p.id === product.id ? product : p);
+        localStorage.setItem('vastra_products', JSON.stringify(updated));
+        return updated;
+      });
+    }
+  };
+
   const deleteProduct = async (productId: string) => {
     if (isFirebaseConfigured && db) {
       try {
@@ -96,7 +115,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   return (
-    <ProductContext.Provider value={{ products, addProduct, deleteProduct }}>
+    <ProductContext.Provider value={{ products, addProduct, updateProduct, deleteProduct }}>
       {children}
     </ProductContext.Provider>
   );

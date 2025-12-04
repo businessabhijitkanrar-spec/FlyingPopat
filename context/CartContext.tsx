@@ -1,5 +1,6 @@
+
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { CartItem, Product } from '../types';
+import { CartItem, Product, Coupon } from '../types';
 
 interface CartContextType {
   cart: CartItem[];
@@ -7,14 +8,19 @@ interface CartContextType {
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
-  cartTotal: number;
+  cartSubtotal: number;
   cartCount: number;
+  appliedCoupon: Coupon | null;
+  applyCoupon: (coupon: Coupon | null) => void;
+  discountAmount: number;
+  finalTotal: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
 
   const addToCart = (product: Product) => {
     setCart((prev) => {
@@ -39,14 +45,41 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     );
   };
 
-  const clearCart = () => setCart([]);
+  const clearCart = () => {
+    setCart([]);
+    setAppliedCoupon(null);
+  };
 
-  const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const applyCoupon = (coupon: Coupon | null) => {
+    setAppliedCoupon(coupon);
+  };
+
+  // Calculations
+  const cartSubtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  
+  const discountAmount = appliedCoupon 
+    ? Math.round(cartSubtotal * (appliedCoupon.discountPercentage / 100))
+    : 0;
+
+  // Final Total (Subtotal - Discount) - No Tax
+  const finalTotal = cartSubtotal - discountAmount;
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount }}
+      value={{ 
+        cart, 
+        addToCart, 
+        removeFromCart, 
+        updateQuantity, 
+        clearCart, 
+        cartSubtotal, 
+        cartCount,
+        appliedCoupon,
+        applyCoupon,
+        discountAmount,
+        finalTotal
+      }}
     >
       {children}
     </CartContext.Provider>

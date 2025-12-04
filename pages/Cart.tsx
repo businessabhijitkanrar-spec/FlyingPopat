@@ -1,18 +1,43 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useCoupon } from '../context/CouponContext';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
-import { Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
+import { Trash2, Plus, Minus, ArrowRight, Ticket } from 'lucide-react';
 
 export const Cart: React.FC = () => {
-  const { cart, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
+  const { cart, removeFromCart, updateQuantity, clearCart, cartSubtotal, discountAmount, finalTotal, appliedCoupon, applyCoupon } = useCart();
   const { isAuthenticated, isAdmin } = useAuth();
+  const { validateCoupon } = useCoupon();
   const navigate = useNavigate();
+
+  const [couponCode, setCouponCode] = useState('');
+  const [couponMessage, setCouponMessage] = useState({ text: '', type: '' as 'success' | 'error' | '' });
 
   // Restrict Admin Access
   if (isAdmin) {
     return <Navigate to="/admin" replace />;
   }
+
+  const handleApplyCoupon = () => {
+    if (!couponCode.trim()) return;
+
+    const coupon = validateCoupon(couponCode);
+    if (coupon) {
+      applyCoupon(coupon);
+      setCouponMessage({ text: `Coupon applied! You saved ${coupon.discountPercentage}%`, type: 'success' });
+    } else {
+      setCouponMessage({ text: 'Invalid or expired coupon code.', type: 'error' });
+      applyCoupon(null);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    applyCoupon(null);
+    setCouponCode('');
+    setCouponMessage({ text: '', type: '' });
+  };
 
   const handleCheckout = () => {
     if (!isAuthenticated) {
@@ -103,25 +128,69 @@ export const Cart: React.FC = () => {
             <div className="bg-white p-8 rounded-xl shadow-lg sticky top-24">
               <h3 className="font-serif text-xl font-bold mb-6">Order Summary</h3>
               
-              <div className="space-y-4 text-sm text-stone-600 mb-6">
+              {/* Coupon Section */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-stone-700 mb-2">Discount Coupon</label>
+                <div className="flex gap-2">
+                   <div className="relative flex-1">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Ticket size={16} className="text-stone-400" />
+                      </div>
+                      <input 
+                        type="text" 
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        disabled={!!appliedCoupon}
+                        placeholder="Enter Code"
+                        className="w-full pl-9 pr-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-royal-500 disabled:bg-stone-50"
+                      />
+                   </div>
+                   {appliedCoupon ? (
+                      <button 
+                        onClick={handleRemoveCoupon}
+                        className="px-3 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors"
+                      >
+                        Remove
+                      </button>
+                   ) : (
+                      <button 
+                        onClick={handleApplyCoupon}
+                        disabled={!couponCode}
+                        className="px-3 py-2 bg-royal-700 text-white rounded-lg text-sm font-medium hover:bg-royal-800 transition-colors disabled:opacity-50"
+                      >
+                        Apply
+                      </button>
+                   )}
+                </div>
+                {couponMessage.text && (
+                  <p className={`text-xs mt-2 ${couponMessage.type === 'success' ? 'text-green-600' : 'text-red-500'}`}>
+                    {couponMessage.text}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-4 text-sm text-stone-600 mb-6 border-t border-stone-100 pt-4">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>₹{cartTotal.toLocaleString('en-IN')}</span>
+                  <span>₹{cartSubtotal.toLocaleString('en-IN')}</span>
                 </div>
+                {appliedCoupon && (
+                   <div className="flex justify-between text-green-600 font-medium">
+                      <span>Discount ({appliedCoupon.code})</span>
+                      <span>- ₹{discountAmount.toLocaleString('en-IN')}</span>
+                   </div>
+                )}
                 <div className="flex justify-between">
                   <span>Shipping</span>
                   <span className="text-green-600">Free</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Tax (GST)</span>
-                  <span>₹{(cartTotal * 0.18).toLocaleString('en-IN')}</span>
-                </div>
+                {/* Tax removed */}
               </div>
 
               <div className="border-t border-stone-100 pt-4 mb-8">
                 <div className="flex justify-between font-bold text-lg text-stone-900">
                   <span>Total</span>
-                  <span>₹{(cartTotal * 1.18).toLocaleString('en-IN')}</span>
+                  <span>₹{finalTotal.toLocaleString('en-IN')}</span>
                 </div>
               </div>
 

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
@@ -7,7 +8,7 @@ import { ArrowLeft, CreditCard, Truck, CheckCircle, ShieldCheck } from 'lucide-r
 import { OrderStatus } from '../types';
 
 export const Checkout: React.FC = () => {
-  const { cart, cartTotal, clearCart } = useCart();
+  const { cart, cartSubtotal, discountAmount, finalTotal, appliedCoupon, clearCart } = useCart();
   const { user, isAuthenticated, isAdmin } = useAuth();
   const { addOrder } = useOrders();
   const navigate = useNavigate();
@@ -66,7 +67,10 @@ export const Checkout: React.FC = () => {
       zip: formData.zip,
       date: new Date().toISOString().split('T')[0],
       status: 'Pending' as OrderStatus,
-      total: Math.round(cartTotal * 1.18),
+      total: finalTotal,
+      subtotal: cartSubtotal,
+      discount: discountAmount,
+      couponCode: appliedCoupon?.code,
       itemsSummary: itemsSummary
     };
 
@@ -266,19 +270,21 @@ export const Checkout: React.FC = () => {
                 <div className="border-t border-stone-100 pt-4 space-y-2 text-sm text-stone-600 mb-6">
                    <div className="flex justify-between">
                      <span>Subtotal</span>
-                     <span>₹{cartTotal.toLocaleString('en-IN')}</span>
+                     <span>₹{cartSubtotal.toLocaleString('en-IN')}</span>
                    </div>
+                   {appliedCoupon && (
+                     <div className="flex justify-between text-green-600 font-medium">
+                       <span>Discount ({appliedCoupon.code})</span>
+                       <span>- ₹{discountAmount.toLocaleString('en-IN')}</span>
+                     </div>
+                   )}
                    <div className="flex justify-between">
                      <span>Shipping</span>
                      <span className="text-green-600">Free</span>
                    </div>
-                   <div className="flex justify-between">
-                     <span>Tax (GST 18%)</span>
-                     <span>₹{(Math.round(cartTotal * 0.18)).toLocaleString('en-IN')}</span>
-                   </div>
                    <div className="flex justify-between font-bold text-lg text-stone-900 pt-2 border-t border-stone-100 mt-2">
                      <span>Total</span>
-                     <span>₹{(Math.round(cartTotal * 1.18)).toLocaleString('en-IN')}</span>
+                     <span>₹{finalTotal.toLocaleString('en-IN')}</span>
                    </div>
                 </div>
 
@@ -288,7 +294,7 @@ export const Checkout: React.FC = () => {
                   disabled={isProcessing}
                   className="w-full bg-royal-700 text-white py-4 rounded-xl font-bold hover:bg-royal-800 transition-colors shadow-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  {isProcessing ? 'Processing...' : `Place Order • ₹${(Math.round(cartTotal * 1.18)).toLocaleString('en-IN')}`}
+                  {isProcessing ? 'Processing...' : `Place Order • ₹${finalTotal.toLocaleString('en-IN')}`}
                 </button>
                 
                 <div className="flex items-center justify-center gap-2 mt-4 text-xs text-stone-400">

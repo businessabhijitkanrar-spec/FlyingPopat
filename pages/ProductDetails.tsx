@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext';
 import { useAuth } from '../context/AuthContext';
-import { ShoppingBag, ArrowLeft, Truck, ShieldCheck, RefreshCw, Loader2 } from 'lucide-react';
-import { generateProductStyleGuide } from '../services/gemini';
+import { ShoppingBag, ArrowLeft, Truck, ShieldCheck, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,29 +14,16 @@ export const ProductDetails: React.FC = () => {
   const { isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState<'desc' | 'details' | 'care'>('desc');
   
-  // AI Style Guide State
-  const [aiStyleGuide, setAiStyleGuide] = useState<string>('');
-  const [isGeneratingStyle, setIsGeneratingStyle] = useState(false);
-
   const product = products.find((p) => p.id === id);
-
-  // Auto-generate style guide when product loads
-  useEffect(() => {
-    let isMounted = true;
-    if (product) {
-      const fetchGuide = async () => {
-        setIsGeneratingStyle(true);
-        setAiStyleGuide(''); 
-        const guide = await generateProductStyleGuide(product);
-        if (isMounted) {
-          setAiStyleGuide(guide);
-          setIsGeneratingStyle(false);
-        }
-      };
-      fetchGuide();
-    }
-    return () => { isMounted = false; };
-  }, [product?.id]); // Re-run when product ID changes
+  
+  // Handle multiple images
+  const images = product?.images && product.images.length > 0 ? product.images : (product ? [product.image] : []);
+  const [selectedImage, setSelectedImage] = useState<string>(images[0] || '');
+  
+  // Update selected image if product loads late or changes
+  React.useEffect(() => {
+    if (images.length > 0) setSelectedImage(images[0]);
+  }, [product]);
 
   if (!product) {
     return (
@@ -53,13 +40,24 @@ export const ProductDetails: React.FC = () => {
     addToCart(product);
   };
 
-  const handleGenerateStyleGuide = async () => {
-    setIsGeneratingStyle(true);
-    setAiStyleGuide(''); // Clear to show loading
-    const guide = await generateProductStyleGuide(product);
-    setAiStyleGuide(guide);
-    setIsGeneratingStyle(false);
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const currentIndex = images.indexOf(selectedImage);
+    const newIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1;
+    setSelectedImage(images[newIndex]);
   };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const currentIndex = images.indexOf(selectedImage);
+    const newIndex = currentIndex === images.length - 1 ? 0 : currentIndex + 1;
+    setSelectedImage(images[newIndex]);
+  };
+
+  // Calculate discount
+  const discount = product.mrp && product.mrp > product.price 
+    ? Math.round(((product.mrp - product.price) / product.mrp) * 100) 
+    : 0;
 
   return (
     <div className="min-h-screen bg-white py-12">
@@ -76,21 +74,69 @@ export const ProductDetails: React.FC = () => {
           
           {/* Image Section */}
           <div className="space-y-4">
-            <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-stone-100 shadow-lg">
+            <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-stone-100 shadow-lg relative group">
               <img 
-                src={product.image} 
+                src={selectedImage} 
                 alt={product.name} 
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
               />
+              
+              {/* Navigation Arrows */}
+              {images.length > 1 && (
+                <>
+                  <button 
+                    onClick={handlePrevImage}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-stone-800 p-2 rounded-full shadow-md backdrop-blur-sm transition-all hover:scale-110 z-10 opacity-0 group-hover:opacity-100"
+                    title="Previous Image"
+                  >
+                    <ChevronLeft size={24} />
+                  </button>
+                  <button 
+                    onClick={handleNextImage}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-stone-800 p-2 rounded-full shadow-md backdrop-blur-sm transition-all hover:scale-110 z-10 opacity-0 group-hover:opacity-100"
+                    title="Next Image"
+                  >
+                    <ChevronRight size={24} />
+                  </button>
+                  
+                  {/* Slide Indicator Dots */}
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                    {images.map((_, idx) => (
+                      <div 
+                        key={idx} 
+                        className={`w-2 h-2 rounded-full transition-all shadow-sm ${selectedImage === images[idx] ? 'bg-white scale-125' : 'bg-white/50'}`} 
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* Overlays for tags */}
+              <div className="absolute top-4 left-4 flex flex-col gap-2">
+                 {product.tags?.map(tag => (
+                   <span 
+                    key={tag} 
+                    className="text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm bg-gold-500 text-white animate-glow"
+                   >
+                      {tag}
+                   </span>
+                 ))}
+              </div>
             </div>
-            {/* Thumbnails (Simulated) */}
-            <div className="grid grid-cols-4 gap-4">
-               {[1,2,3].map((i) => (
-                 <div key={i} className="aspect-square rounded-lg overflow-hidden cursor-pointer opacity-70 hover:opacity-100 ring-2 ring-transparent hover:ring-royal-700 transition-all">
-                   <img src={product.image} alt="Thumbnail" className="w-full h-full object-cover" />
-                 </div>
-               ))}
-            </div>
+            {/* Thumbnails */}
+            {images.length > 1 && (
+              <div className="grid grid-cols-4 gap-4">
+                 {images.map((img, index) => (
+                   <div 
+                    key={index} 
+                    onClick={() => setSelectedImage(img)}
+                    className={`aspect-square rounded-lg overflow-hidden cursor-pointer opacity-70 hover:opacity-100 transition-all ${selectedImage === img ? 'ring-2 ring-royal-700 opacity-100' : 'ring-2 ring-transparent'}`}
+                   >
+                     <img src={img} alt={`View ${index + 1}`} className="w-full h-full object-cover" />
+                   </div>
+                 ))}
+              </div>
+            )}
           </div>
 
           {/* Info Section */}
@@ -98,32 +144,16 @@ export const ProductDetails: React.FC = () => {
             <div>
               <span className="text-sm font-bold tracking-widest text-royal-700 uppercase">{product.category}</span>
               <h1 className="font-serif text-4xl text-stone-900 font-bold mt-2 mb-4">{product.name}</h1>
-              <p className="text-2xl font-medium text-stone-800 mb-6">₹{product.price.toLocaleString('en-IN')}</p>
               
-              <div className="prose prose-stone mb-6">
-                <p>{product.description}</p>
-              </div>
-
-              {/* AI Style Guide Section - Removed Header */}
-              <div className="mb-8 min-h-[80px]">
-                {isGeneratingStyle ? (
-                  <div className="flex items-center gap-2 text-stone-400 text-sm animate-pulse">
-                    <Loader2 size={16} className="animate-spin" />
-                    <span>Styling...</span>
-                  </div>
-                ) : (
-                  <div className="bg-stone-50 border border-stone-100 rounded-xl p-5 relative group">
-                    <div className="text-sm text-stone-700 whitespace-pre-wrap leading-relaxed font-medium">
-                      {aiStyleGuide}
-                    </div>
-                    <button 
-                        onClick={handleGenerateStyleGuide} 
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-stone-400 hover:text-royal-700 transition-opacity p-1"
-                        title="Refresh Description"
-                    >
-                        <RefreshCw size={14} />
-                    </button>
-                  </div>
+              <div className="flex items-baseline gap-4 mb-6">
+                <p className="text-3xl font-medium text-stone-900">₹{product.price.toLocaleString('en-IN')}</p>
+                {product.mrp && product.mrp > product.price && (
+                  <>
+                    <p className="text-xl text-stone-400 line-through">₹{product.mrp.toLocaleString('en-IN')}</p>
+                    <span className="text-lg font-bold text-green-600">
+                      ({discount}% OFF)
+                    </span>
+                  </>
                 )}
               </div>
 
@@ -173,22 +203,40 @@ export const ProductDetails: React.FC = () => {
                   </button>
                 ))}
               </div>
-              <div className="h-24 text-sm text-stone-600 leading-relaxed">
+              {/* Increased height to accommodate full description */}
+              <div className="min-h-[16rem] text-sm text-stone-600 leading-relaxed overflow-y-auto">
                  {activeTab === 'desc' && (
-                    <p>{product.description} Woven with passion and precision.</p>
+                    <div className="prose prose-sm prose-stone">
+                      <p>{product.description}</p>
+                      <p className="mt-4">Woven with passion and precision, this saree represents the pinnacle of traditional craftsmanship.</p>
+                    </div>
                  )}
                  {activeTab === 'details' && (
-                    <ul className="list-disc pl-4 space-y-1">
-                        <li>Fabric: {product.fabric}</li>
-                        <li>Occasion: {product.occasion.join(', ')}</li>
-                        <li>Length: 6.3 meters (including blouse piece)</li>
+                    <ul className="list-disc pl-4 space-y-2">
+                        {product.details ? (
+                          product.details.map((detail, index) => <li key={index}>{detail}</li>)
+                        ) : (
+                          <>
+                            <li>Fabric: {product.fabric}</li>
+                            <li>Occasion: {product.occasion.join(', ')}</li>
+                            <li>Length: 6.3 meters (including blouse piece)</li>
+                            <li>Blouse Piece: Included</li>
+                          </>
+                        )}
                     </ul>
                  )}
                  {activeTab === 'care' && (
-                    <ul className="list-disc pl-4 space-y-1">
-                        <li>Dry clean only</li>
-                        <li>Store in a muslin cloth</li>
-                        <li>Avoid direct sunlight when drying</li>
+                    <ul className="list-disc pl-4 space-y-2">
+                        {product.care ? (
+                          product.care.map((item, index) => <li key={index}>{item}</li>)
+                        ) : (
+                          <>
+                            <li>Dry clean only to maintain the luster.</li>
+                            <li>Store in a muslin cloth to allow the fabric to breathe.</li>
+                            <li>Avoid direct sunlight when drying to prevent color fading.</li>
+                            <li>Iron on low heat with a protective cloth.</li>
+                          </>
+                        )}
                     </ul>
                  )}
               </div>

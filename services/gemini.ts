@@ -1,12 +1,13 @@
 import { GoogleGenAI, GenerateContentResponse, Chat } from "@google/genai";
 import { Product } from '../types';
 
-// Safely access process.env to prevent "process is not defined" crashes in browser environments
-const apiKey = (typeof process !== 'undefined' && process.env && process.env.API_KEY) ? process.env.API_KEY : '';
+// Safely access the API key. The vite config handles replacement, but we add a fallback to empty string
+// to prevent "cannot read property of undefined" if process.env is somehow missing.
+const apiKey = process.env.API_KEY || '';
 const ai = new GoogleGenAI({ apiKey });
 
 const SYSTEM_INSTRUCTION = `
-You are 'Veda', an expert AI Fashion Stylist for 'Vastra AI', a luxury saree boutique.
+You are 'Veda', an expert AI Fashion Stylist for 'FlyingPopat', a luxury saree boutique.
 Your goal is to help customers choose the perfect saree based on their occasion, body type, skin tone, and personal preferences.
 You are knowledgeable about Indian fabrics (Banarasi, Kanjeevaram, Chiffon, etc.), draping styles, and jewelry pairing.
 Keep your tone elegant, helpful, and culturally appreciative.
@@ -30,14 +31,12 @@ export const generateStylingAdvice = async (
   imageBase64?: string
 ): Promise<string> => {
   try {
-    let content: any = { role: 'user', parts: [] };
-    
-    // The @google/genai Chat.sendMessage usually takes a string or parts. 
-    // Let's use the parts structure if an image is present.
-    const payload: any = { message: message };
+    if (!apiKey) return "AI Stylist is currently offline (API Key missing).";
+
+    let msgContent: string | { parts: any[] } = message;
     
     if (imageBase64) {
-        payload.message = {
+        msgContent = {
             parts: [
                 {
                     inlineData: {
@@ -49,10 +48,10 @@ export const generateStylingAdvice = async (
                     text: message
                 }
             ]
-        }
+        };
     }
 
-    const response: GenerateContentResponse = await chat.sendMessage(payload);
+    const response: GenerateContentResponse = await chat.sendMessage({ message: msgContent });
     return response.text || "I apologize, I couldn't generate a response at the moment.";
   } catch (error) {
     console.error("Gemini API Error:", error);
@@ -84,6 +83,8 @@ const getBase64FromUrl = async (url: string): Promise<string | null> => {
 
 export const generateProductStyleGuide = async (product: Product): Promise<string> => {
   try {
+    if (!apiKey) return "";
+
     // Randomize the tone slightly to ensure description changes every time page reloads
     const tones = ["poetic", "bold", "sophisticated", "traditional", "chic"];
     const randomTone = tones[Math.floor(Math.random() * tones.length)];

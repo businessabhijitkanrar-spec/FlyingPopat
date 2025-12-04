@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useOrders } from '../context/OrderContext';
 import { useFeedback } from '../context/FeedbackContext';
 import { Order, OrderStatus } from '../types';
-import { Package, Truck, CheckCircle, Clock, XCircle, MapPin, ChevronDown, ChevronUp, Star, AlertCircle, X } from 'lucide-react';
+import { Package, Truck, CheckCircle, Clock, XCircle, MapPin, ChevronDown, ChevronUp, Star, AlertCircle, X, RefreshCcw } from 'lucide-react';
 
 export const MyOrders: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -135,6 +136,20 @@ export const MyOrders: React.FC = () => {
                 {/* Expanded Details */}
                 {expandedOrder === order.id && (
                   <div className="border-t border-stone-100 bg-stone-50/50 p-6 animate-fade-in-down">
+                    
+                    {/* Refund Status Display */}
+                    {order.status === 'Cancelled' && (
+                        <div className="bg-red-50 border border-red-100 rounded-lg p-4 mb-6 flex items-start gap-3">
+                            <RefreshCcw className="text-red-500 mt-0.5" size={20} />
+                            <div>
+                                <h4 className="font-bold text-red-700 text-sm">Order Cancelled</h4>
+                                <p className="text-red-600 text-sm mt-1">
+                                    Refund Status: <span className="font-bold uppercase tracking-wide bg-white px-2 py-0.5 rounded border border-red-200 ml-1">{order.refundStatus || 'Pending'}</span>
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="grid md:grid-cols-2 gap-8 mb-6">
                       <div>
                         <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-3">Items</h4>

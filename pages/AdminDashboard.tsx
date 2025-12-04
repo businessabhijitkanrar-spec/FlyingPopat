@@ -4,8 +4,10 @@ import { useAuth } from '../context/AuthContext';
 import { useProducts } from '../context/ProductContext';
 import { useOrders } from '../context/OrderContext';
 import { useFeedback } from '../context/FeedbackContext';
+import { useInquiry } from '../context/InquiryContext';
+import { useCoupon } from '../context/CouponContext';
 import { isFirebaseConfigured } from '../firebase-config';
-import { SareeCategory, Product, Order, OrderStatus } from '../types';
+import { SareeCategory, Product, Order, OrderStatus, RefundStatus, Coupon } from '../types';
 import { 
   Package, 
   TrendingUp, 
@@ -28,64 +30,231 @@ import {
   Star,
   Download,
   Wifi,
-  WifiOff
+  WifiOff,
+  Image as ImageIcon,
+  Pencil,
+  RefreshCcw,
+  MinusCircle,
+  Tag,
+  Inbox,
+  TicketPercent,
+  FileText
 } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
 export const AdminDashboard: React.FC = () => {
   const { user, isAdmin, allUsers } = useAuth();
-  const { products, deleteProduct, addProduct } = useProducts();
-  const { orders, updateOrderStatus } = useOrders();
+  const { products, deleteProduct, addProduct, updateProduct } = useProducts();
+  const { orders, updateOrderStatus, updateRefundStatus } = useOrders();
   const { feedbacks } = useFeedback();
-  const [activeTab, setActiveTab] = useState<'orders' | 'catalog' | 'customers' | 'feedback'>('orders');
+  const { inquiries, markAsRead, deleteInquiry } = useInquiry();
+  const { coupons, addCoupon, deleteCoupon, toggleCouponStatus } = useCoupon();
+  
+  const [activeTab, setActiveTab] = useState<'orders' | 'catalog' | 'customers' | 'feedback' | 'inquiries' | 'coupons'>('orders');
+  
   const [showAddModal, setShowAddModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [newStatus, setNewStatus] = useState<OrderStatus>('Pending');
+  const [statusNote, setStatusNote] = useState('');
+  const [newRefundStatus, setNewRefundStatus] = useState<RefundStatus>('Pending');
   
   const [searchTerm, setSearchTerm] = useState('');
   const [orderSearchTerm, setOrderSearchTerm] = useState('');
   const [customerSearchTerm, setCustomerSearchTerm] = useState('');
 
+  // Coupon Form
+  const [newCouponCode, setNewCouponCode] = useState('');
+  const [newCouponDiscount, setNewCouponDiscount] = useState(10);
+
   // Form State
   const [newProduct, setNewProduct] = useState<Partial<Product>>({
     name: '',
     price: 0,
+    mrp: 0,
     category: SareeCategory.BANARASI,
     description: '',
     fabric: '',
     colors: [],
     occasion: [],
+    details: [],
+    care: [],
+    tags: [],
     image: 'https://picsum.photos/600/800?random=' + Date.now()
   });
+
+  // Local state for array inputs
+  const [colorsInput, setColorsInput] = useState('');
+  const [occasionInput, setOccasionInput] = useState('');
+  const [detailsInput, setDetailsInput] = useState('');
+  const [careInput, setCareInput] = useState('');
+  
+  // State for multiple images
+  const [productImages, setProductImages] = useState<string[]>(['']);
+
+  const AVAILABLE_TAGS = ['New Arrival', 'Hot Selling', 'Best Value'];
 
   if (!user || !isAdmin) {
     return <Navigate to="/login" replace />;
   }
 
-  const handleAddProduct = (e: React.FormEvent) => {
+  const resetForm = () => {
+    setNewProduct({
+      name: '',
+      price: 0,
+      mrp: 0,
+      category: SareeCategory.BANARASI,
+      description: '',
+      fabric: '',
+      colors: [],
+      occasion: [],
+      details: [],
+      care: [],
+      tags: [],
+      image: 'https://picsum.photos/600/800?random=' + Date.now()
+    });
+    setColorsInput('');
+    setOccasionInput('');
+    setDetailsInput('');
+    setCareInput('');
+    setProductImages(['']);
+    setIsEditing(false);
+    setEditingProductId(null);
+  };
+
+  const handleSaveProduct = (e: React.FormEvent) => {
     e.preventDefault();
     if (newProduct.name && newProduct.price) {
-      addProduct({
+      // Filter out empty image strings
+      const validImages = productImages.filter(img => img.trim() !== '');
+      const mainImage = validImages.length > 0 ? validImages[0] : (newProduct.image || '');
+
+      // Ensure MRP is at least equal to price if set
+      const finalPrice = Number(newProduct.price);
+      let finalMrp = newProduct.mrp ? Number(newProduct.mrp) : 0;
+      if (finalMrp < finalPrice) finalMrp = finalPrice;
+
+      const productData: Product = {
         ...newProduct as Product,
-        id: Date.now().toString(),
-        colors: ['Red', 'Gold'], // Defaults for demo
-        occasion: ['Wedding'],   // Defaults for demo
-      });
+        price: finalPrice,
+        mrp: finalMrp,
+        id: isEditing && editingProductId ? editingProductId : Date.now().toString(),
+        image: mainImage,
+        images: validImages,
+        colors: colorsInput.split(',').map(s => s.trim()).filter(Boolean),
+        occasion: occasionInput.split(',').map(s => s.trim()).filter(Boolean),
+        details: detailsInput.split('\n').map(s => s.trim()).filter(Boolean),
+        care: careInput.split('\n').map(s => s.trim()).filter(Boolean),
+        tags: newProduct.tags || []
+      };
+
+      if (isEditing) {
+        updateProduct(productData);
+      } else {
+        addProduct(productData);
+      }
+
       setShowAddModal(false);
-      setNewProduct({
-        name: '',
-        price: 0,
-        category: SareeCategory.BANARASI,
-        description: '',
-        fabric: '',
-        image: 'https://picsum.photos/600/800?random=' + Date.now()
-      });
+      resetForm();
     }
+  };
+
+  const handleAddCoupon = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newCouponCode && newCouponDiscount > 0) {
+      await addCoupon({
+        id: Date.now().toString(),
+        code: newCouponCode.toUpperCase(),
+        discountPercentage: Number(newCouponDiscount),
+        isActive: true
+      });
+      setNewCouponCode('');
+      setNewCouponDiscount(10);
+    }
+  };
+
+  const handleEditClick = (product: Product) => {
+    setNewProduct(product);
+    setEditingProductId(product.id);
+    setColorsInput(product.colors.join(', '));
+    setOccasionInput(product.occasion.join(', '));
+    setDetailsInput(product.details ? product.details.join('\n') : '');
+    setCareInput(product.care ? product.care.join('\n') : '');
+    
+    // Setup images
+    if (product.images && product.images.length > 0) {
+      setProductImages(product.images);
+    } else {
+      setProductImages([product.image]);
+    }
+    
+    setIsEditing(true);
+    setShowAddModal(true);
+  };
+
+  const handleModalClose = () => {
+    setShowAddModal(false);
+    resetForm();
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const newImages = [...productImages];
+        newImages[index] = reader.result as string;
+        setProductImages(newImages);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageUrlChange = (value: string, index: number) => {
+    const newImages = [...productImages];
+    newImages[index] = value;
+    setProductImages(newImages);
+  };
+
+  const addImageSlot = () => {
+    if (productImages.length < 3) {
+      setProductImages([...productImages, '']);
+    }
+  };
+
+  const removeImageSlot = (index: number) => {
+    const newImages = productImages.filter((_, i) => i !== index);
+    setProductImages(newImages.length ? newImages : ['']);
+  };
+
+  const toggleTag = (tag: string) => {
+    setNewProduct(prev => {
+      const currentTags = prev.tags || [];
+      if (currentTags.includes(tag)) {
+        return { ...prev, tags: currentTags.filter(t => t !== tag) };
+      } else {
+        return { ...prev, tags: [...currentTags, tag] };
+      }
+    });
   };
 
   const handleUpdateStatus = () => {
     if (selectedOrder) {
-      updateOrderStatus(selectedOrder.id, newStatus);
+      updateOrderStatus(selectedOrder.id, newStatus, statusNote);
+      if (selectedOrder.status === 'Cancelled' && newStatus !== 'Cancelled') {
+        // Reset refund status if un-cancelled (rare case)
+        updateRefundStatus(selectedOrder.id, 'Pending');
+      }
+      setSelectedOrder(null);
+      setStatusNote('');
+    }
+  };
+
+  const handleUpdateRefundStatus = () => {
+    if (selectedOrder) {
+      updateRefundStatus(selectedOrder.id, newRefundStatus);
       setSelectedOrder(null);
     }
   };
@@ -143,6 +312,7 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const orderStatuses: OrderStatus[] = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+  const refundStatuses: RefundStatus[] = ['Pending', 'Processed', 'Failed'];
 
   return (
     <div className="min-h-screen bg-stone-50 flex flex-col md:flex-row">
@@ -188,6 +358,20 @@ export const AdminDashboard: React.FC = () => {
             <MessageSquare size={20} />
             Feedbacks
           </button>
+          <button 
+            onClick={() => setActiveTab('inquiries')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'inquiries' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}
+          >
+            <Inbox size={20} />
+            Inquiries
+          </button>
+          <button 
+            onClick={() => setActiveTab('coupons')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'coupons' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}
+          >
+            <TicketPercent size={20} />
+            Coupons
+          </button>
         </nav>
         
         {/* Mini Stats in Sidebar */}
@@ -218,6 +402,8 @@ export const AdminDashboard: React.FC = () => {
             {activeTab === 'catalog' && 'Update your collection and manage inventory'}
             {activeTab === 'customers' && 'View registered customer details'}
             {activeTab === 'feedback' && 'Customer reviews and cancellation reasons'}
+            {activeTab === 'inquiries' && 'View messages from Contact Us form'}
+            {activeTab === 'coupons' && 'Manage discount codes and promotions'}
           </p>
         </div>
 
@@ -257,7 +443,7 @@ export const AdminDashboard: React.FC = () => {
                     {filteredOrders.map((order) => (
                       <tr 
                         key={order.id} 
-                        onClick={() => { setSelectedOrder(order); setNewStatus(order.status); }} 
+                        onClick={() => { setSelectedOrder(order); setNewStatus(order.status); setStatusNote(order.statusNote || ''); setNewRefundStatus(order.refundStatus || 'Pending'); }} 
                         className="hover:bg-stone-50/50 transition-colors group cursor-pointer"
                       >
                         <td className="px-6 py-4 font-mono font-medium text-stone-900">{order.id}</td>
@@ -410,6 +596,150 @@ export const AdminDashboard: React.FC = () => {
              </div>
            </div>
         )}
+        
+        {/* INQUIRIES TAB */}
+        {activeTab === 'inquiries' && (
+           <div className="space-y-6">
+             <div className="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden">
+               <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm text-stone-600">
+                  <thead className="bg-stone-50 text-stone-900 font-semibold uppercase tracking-wider text-xs border-b border-stone-100">
+                    <tr>
+                      <th className="px-6 py-4">Date</th>
+                      <th className="px-6 py-4">Name</th>
+                      <th className="px-6 py-4">Email</th>
+                      <th className="px-6 py-4">Subject</th>
+                      <th className="px-6 py-4">Message</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100">
+                    {inquiries.map((inq) => (
+                      <tr key={inq.id} className={`hover:bg-stone-50/50 transition-colors ${inq.status === 'New' ? 'bg-royal-50/30' : ''}`}>
+                        <td className="px-6 py-4 text-xs">{inq.date}</td>
+                        <td className="px-6 py-4 font-medium text-stone-900">{inq.name}</td>
+                        <td className="px-6 py-4">{inq.email}</td>
+                        <td className="px-6 py-4 font-medium text-stone-800">{inq.subject}</td>
+                        <td className="px-6 py-4 max-w-xs truncate text-stone-600" title={inq.message}>
+                          {inq.message}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold uppercase ${inq.status === 'New' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
+                             {inq.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                           <div className="flex justify-end gap-2">
+                             {inq.status === 'New' && (
+                               <button 
+                                 onClick={() => markAsRead(inq.id)}
+                                 className="p-2 text-blue-600 hover:bg-blue-50 rounded-full"
+                                 title="Mark as Read"
+                               >
+                                 <CheckCircle size={16} />
+                               </button>
+                             )}
+                             <button 
+                               onClick={() => deleteInquiry(inq.id)}
+                               className="p-2 text-red-500 hover:bg-red-50 rounded-full"
+                               title="Delete Inquiry"
+                             >
+                               <Trash2 size={16} />
+                             </button>
+                           </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+               </div>
+               {inquiries.length === 0 && (
+                  <div className="p-8 text-center text-stone-500">No new inquiries.</div>
+               )}
+             </div>
+           </div>
+        )}
+
+        {/* COUPONS TAB */}
+        {activeTab === 'coupons' && (
+          <div className="space-y-6">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-stone-100">
+               <h3 className="text-lg font-bold mb-4">Create New Coupon</h3>
+               <form onSubmit={handleAddCoupon} className="flex flex-col sm:flex-row gap-4 items-end">
+                  <div className="flex-1 w-full">
+                    <label className="block text-sm font-medium text-stone-700 mb-1">Coupon Code</label>
+                    <input 
+                      type="text" 
+                      required
+                      value={newCouponCode}
+                      onChange={(e) => setNewCouponCode(e.target.value.toUpperCase())}
+                      className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-royal-500"
+                      placeholder="e.g. SUMMER25"
+                    />
+                  </div>
+                  <div className="w-full sm:w-32">
+                    <label className="block text-sm font-medium text-stone-700 mb-1">Discount %</label>
+                    <input 
+                      type="number"
+                      required
+                      min="1"
+                      max="100"
+                      value={newCouponDiscount}
+                      onChange={(e) => setNewCouponDiscount(Number(e.target.value))}
+                      className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-royal-500"
+                    />
+                  </div>
+                  <button type="submit" className="w-full sm:w-auto bg-royal-700 text-white px-6 py-2 rounded-lg font-medium hover:bg-royal-800 transition-colors">
+                    Add Coupon
+                  </button>
+               </form>
+            </div>
+
+             <div className="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden">
+               <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm text-stone-600">
+                  <thead className="bg-stone-50 text-stone-900 font-semibold uppercase tracking-wider text-xs border-b border-stone-100">
+                    <tr>
+                      <th className="px-6 py-4">Code</th>
+                      <th className="px-6 py-4">Discount</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100">
+                    {coupons.map((coupon) => (
+                      <tr key={coupon.id} className="hover:bg-stone-50/50 transition-colors">
+                        <td className="px-6 py-4 font-mono font-bold text-lg text-stone-800">{coupon.code}</td>
+                        <td className="px-6 py-4 font-medium text-green-600">{coupon.discountPercentage}% OFF</td>
+                        <td className="px-6 py-4">
+                          <button 
+                            onClick={() => toggleCouponStatus(coupon.id, coupon.isActive)}
+                            className={`px-3 py-1 rounded-full text-xs font-bold uppercase transition-colors ${coupon.isActive ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                          >
+                             {coupon.isActive ? 'Active' : 'Inactive'}
+                          </button>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                             <button 
+                               onClick={() => deleteCoupon(coupon.id)}
+                               className="p-2 text-red-500 hover:bg-red-50 rounded-full"
+                               title="Delete Coupon"
+                             >
+                               <Trash2 size={16} />
+                             </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+               </div>
+               {coupons.length === 0 && (
+                  <div className="p-8 text-center text-stone-500">No coupons available.</div>
+               )}
+             </div>
+          </div>
+        )}
 
         {/* CATALOG TAB */}
         {activeTab === 'catalog' && (
@@ -459,7 +789,7 @@ export const AdminDashboard: React.FC = () => {
                 />
               </div>
               <button 
-                onClick={() => setShowAddModal(true)}
+                onClick={() => { setShowAddModal(true); setIsEditing(false); resetForm(); }}
                 className="w-full sm:w-auto flex items-center justify-center gap-2 bg-royal-700 text-white px-5 py-2.5 rounded-lg hover:bg-royal-800 transition-colors shadow-md font-medium"
               >
                 <Plus size={18} /> Add New Saree
@@ -474,8 +804,7 @@ export const AdminDashboard: React.FC = () => {
                     <tr>
                       <th className="px-6 py-4">Product</th>
                       <th className="px-6 py-4">Category</th>
-                      <th className="px-6 py-4">Price</th>
-                      <th className="px-6 py-4">Fabric</th>
+                      <th className="px-6 py-4">Pricing</th>
                       <th className="px-6 py-4 text-right">Actions</th>
                     </tr>
                   </thead>
@@ -493,16 +822,31 @@ export const AdminDashboard: React.FC = () => {
                             {product.category}
                           </span>
                         </td>
-                        <td className="px-6 py-4 font-medium text-stone-900">₹{product.price.toLocaleString('en-IN')}</td>
-                        <td className="px-6 py-4">{product.fabric}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col">
+                            <span className="font-medium text-stone-900">SP: ₹{product.price.toLocaleString('en-IN')}</span>
+                            {product.mrp && product.mrp > product.price && (
+                              <span className="text-xs text-stone-400 line-through">MRP: ₹{product.mrp.toLocaleString('en-IN')}</span>
+                            )}
+                          </div>
+                        </td>
                         <td className="px-6 py-4 text-right">
-                          <button 
-                            onClick={() => deleteProduct(product.id)}
-                            className="text-stone-400 hover:text-red-600 transition-colors p-2 hover:bg-red-50 rounded-full"
-                            title="Delete Product"
-                          >
-                            <Trash2 size={18} />
-                          </button>
+                          <div className="flex justify-end gap-2">
+                            <button 
+                              onClick={() => handleEditClick(product)}
+                              className="text-stone-400 hover:text-royal-600 transition-colors p-2 hover:bg-royal-50 rounded-full"
+                              title="Edit Product"
+                            >
+                              <Pencil size={18} />
+                            </button>
+                            <button 
+                              onClick={() => deleteProduct(product.id)}
+                              className="text-stone-400 hover:text-red-600 transition-colors p-2 hover:bg-red-50 rounded-full"
+                              title="Delete Product"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -519,18 +863,59 @@ export const AdminDashboard: React.FC = () => {
         )}
       </main>
 
-      {/* Add Product Modal */}
+      {/* Add/Edit Product Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in-down">
-            <div className="px-6 py-4 border-b border-stone-100 flex justify-between items-center bg-royal-900 text-white">
-              <h3 className="font-bold text-lg">Add New Product</h3>
-              <button onClick={() => setShowAddModal(false)} className="hover:bg-white/10 p-1 rounded transition-colors">
+          <div className="bg-white rounded-xl shadow-2xl w-[95%] md:w-full max-w-lg overflow-hidden animate-fade-in-down max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b border-stone-100 flex justify-between items-center bg-royal-900 text-white sticky top-0 z-10">
+              <h3 className="font-bold text-lg">{isEditing ? 'Edit Product' : 'Add New Product'}</h3>
+              <button onClick={handleModalClose} className="hover:bg-white/10 p-1 rounded transition-colors">
                 <Plus className="rotate-45" size={20} />
               </button>
             </div>
             
-            <form onSubmit={handleAddProduct} className="p-6 space-y-4">
+            <form onSubmit={handleSaveProduct} className="p-6 space-y-4">
+              {/* Product Images Selection */}
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-2">Product Images (Max 3)</label>
+                <div className="space-y-3">
+                  {productImages.map((img, index) => (
+                    <div key={index} className="flex gap-2 items-start">
+                       <div className="flex-1">
+                          <div className="flex gap-2">
+                              <input 
+                                type="text" 
+                                value={img}
+                                onChange={e => handleImageUrlChange(e.target.value, index)}
+                                placeholder="Image URL"
+                                className="flex-1 border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-royal-500 text-sm"
+                              />
+                              <label className="cursor-pointer bg-stone-100 border border-stone-300 rounded-lg px-3 py-2 hover:bg-stone-200 transition-colors flex items-center justify-center" title="Upload Image">
+                                <ImageIcon size={18} className="text-stone-600" />
+                                <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, index)} />
+                              </label>
+                              {productImages.length > 1 && (
+                                <button type="button" onClick={() => removeImageSlot(index)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg">
+                                    <MinusCircle size={18} />
+                                </button>
+                              )}
+                          </div>
+                          {img && (
+                            <div className="mt-2 h-20 w-20 rounded-lg overflow-hidden border border-stone-200 bg-stone-50">
+                              <img src={img} alt="Preview" className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                       </div>
+                    </div>
+                  ))}
+                  {productImages.length < 3 && (
+                     <button type="button" onClick={addImageSlot} className="text-sm text-royal-700 font-medium hover:underline flex items-center gap-1">
+                        <Plus size={16} /> Add another image
+                     </button>
+                  )}
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-stone-700 mb-1">Product Name</label>
                 <input 
@@ -544,7 +929,7 @@ export const AdminDashboard: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Price (₹)</label>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">Selling Price (₹)</label>
                   <input 
                     required
                     type="number" 
@@ -554,16 +939,47 @@ export const AdminDashboard: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Category</label>
-                  <select 
-                    value={newProduct.category}
-                    onChange={e => setNewProduct({...newProduct, category: e.target.value as SareeCategory})}
+                  <label className="block text-sm font-medium text-stone-700 mb-1">MRP (₹)</label>
+                  <input 
+                    type="number" 
+                    value={newProduct.mrp || ''}
+                    onChange={e => setNewProduct({...newProduct, mrp: parseInt(e.target.value)})}
+                    placeholder="Optional"
                     className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-royal-500"
-                  >
-                    {Object.values(SareeCategory).map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
+                  />
+                  <p className="text-[10px] text-stone-500 mt-1">Leave blank or set equal to price for no discount</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-1">Category</label>
+                <select 
+                  value={newProduct.category}
+                  onChange={e => setNewProduct({...newProduct, category: e.target.value as SareeCategory})}
+                  className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-royal-500"
+                >
+                  {Object.values(SareeCategory).map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-2">Tags / Badges</label>
+                <div className="flex flex-wrap gap-2">
+                  {AVAILABLE_TAGS.map(tag => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => toggleTag(tag)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors flex items-center gap-1
+                        ${(newProduct.tags || []).includes(tag) 
+                          ? 'bg-royal-50 border-royal-200 text-royal-700' 
+                          : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
+                    >
+                      <Tag size={12} /> {tag}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -577,6 +993,29 @@ export const AdminDashboard: React.FC = () => {
                     className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-royal-500"
                   />
               </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                   <label className="block text-sm font-medium text-stone-700 mb-1">Colors (Comma separated)</label>
+                   <input 
+                      type="text" 
+                      value={colorsInput}
+                      onChange={e => setColorsInput(e.target.value)}
+                      placeholder="Red, Gold, Blue"
+                      className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-royal-500"
+                    />
+                </div>
+                <div>
+                   <label className="block text-sm font-medium text-stone-700 mb-1">Occasion (Comma separated)</label>
+                   <input 
+                      type="text" 
+                      value={occasionInput}
+                      onChange={e => setOccasionInput(e.target.value)}
+                      placeholder="Wedding, Party"
+                      className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-royal-500"
+                    />
+                </div>
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-stone-700 mb-1">Description</label>
@@ -588,12 +1027,34 @@ export const AdminDashboard: React.FC = () => {
                 ></textarea>
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-1">Product Details (One per line)</label>
+                <textarea 
+                  rows={3}
+                  value={detailsInput}
+                  onChange={e => setDetailsInput(e.target.value)}
+                  placeholder="Length: 6.3m&#10;Blouse piece included"
+                  className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-royal-500"
+                ></textarea>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-1">Care Instructions (One per line)</label>
+                <textarea 
+                  rows={3}
+                  value={careInput}
+                  onChange={e => setCareInput(e.target.value)}
+                  placeholder="Dry clean only&#10;Iron on low heat"
+                  className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-royal-500"
+                ></textarea>
+              </div>
+
               <div className="pt-2">
                 <button 
                   type="submit" 
                   className="w-full bg-royal-700 text-white py-3 rounded-lg font-medium hover:bg-royal-800 transition-colors shadow-md"
                 >
-                  Create Product
+                  {isEditing ? 'Update Product' : 'Create Product'}
                 </button>
               </div>
             </form>
@@ -604,8 +1065,8 @@ export const AdminDashboard: React.FC = () => {
       {/* Order Details Modal */}
       {selectedOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden animate-fade-in-down">
-             <div className="px-6 py-4 border-b border-stone-100 flex justify-between items-center bg-royal-900 text-white">
+          <div className="bg-white rounded-xl shadow-2xl w-[95%] md:w-full max-w-2xl overflow-hidden animate-fade-in-down max-h-[90vh] overflow-y-auto">
+             <div className="px-6 py-4 border-b border-stone-100 flex justify-between items-center bg-royal-900 text-white sticky top-0">
               <h3 className="font-bold text-lg">Order Details - {selectedOrder.id}</h3>
               <button onClick={() => setSelectedOrder(null)} className="hover:bg-white/10 p-1 rounded transition-colors">
                 <Plus className="rotate-45" size={20} />
@@ -642,40 +1103,95 @@ export const AdminDashboard: React.FC = () => {
                  </h4>
                  <div className="bg-stone-50 p-4 rounded-lg">
                    <p className="text-sm text-stone-600 mb-2">{selectedOrder.itemsSummary}</p>
-                   <div className="flex justify-between border-t border-stone-200 pt-2 mt-2 font-bold text-stone-900">
-                     <span>Total Amount</span>
-                     <span>₹{selectedOrder.total.toLocaleString('en-IN')}</span>
+                   
+                   {/* Price Breakdown */}
+                   <div className="space-y-1 text-sm text-stone-600 border-t border-stone-200 pt-2 mt-2">
+                      {selectedOrder.subtotal && (
+                        <div className="flex justify-between">
+                           <span>Subtotal</span>
+                           <span>₹{selectedOrder.subtotal.toLocaleString('en-IN')}</span>
+                        </div>
+                      )}
+                      {selectedOrder.discount ? (
+                        <div className="flex justify-between text-green-600">
+                           <span>Discount {selectedOrder.couponCode ? `(${selectedOrder.couponCode})` : ''}</span>
+                           <span>- ₹{selectedOrder.discount.toLocaleString('en-IN')}</span>
+                        </div>
+                      ) : null}
+                      <div className="flex justify-between font-bold text-stone-900 pt-1 mt-1 border-t border-stone-200">
+                         <span>Total Amount</span>
+                         <span>₹{selectedOrder.total.toLocaleString('en-IN')}</span>
+                      </div>
                    </div>
                  </div>
                </div>
+               
+               {/* Refund Management Section */}
+               {selectedOrder.status === 'Cancelled' && (
+                  <div className="mb-6 bg-red-50 p-4 rounded-lg border border-red-100">
+                    <h4 className="text-sm font-bold text-red-700 uppercase tracking-wide mb-3 flex items-center gap-2">
+                        <RefreshCcw size={16} /> Refund Management
+                    </h4>
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1">
+                          <label className="text-xs font-semibold text-red-600 mb-1 block">Current Refund Status</label>
+                          <select
+                            value={newRefundStatus}
+                            onChange={(e) => setNewRefundStatus(e.target.value as RefundStatus)}
+                            className="w-full px-3 py-2 border border-red-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-red-500 bg-white"
+                          >
+                            {refundStatuses.map(status => (
+                              <option key={status} value={status}>{status}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <button 
+                          onClick={handleUpdateRefundStatus}
+                          className="mt-5 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-sm text-sm font-medium"
+                        >
+                          Update Refund
+                        </button>
+                    </div>
+                  </div>
+               )}
 
-               <div className="flex justify-between items-center pt-4 border-t border-stone-100">
-                 <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-stone-700">Update Status:</span>
-                    <select
-                      value={newStatus}
-                      onChange={(e) => setNewStatus(e.target.value as OrderStatus)}
-                      className="px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-royal-500"
-                    >
-                      {orderStatuses.map(status => (
-                        <option key={status} value={status}>{status}</option>
-                      ))}
-                    </select>
-                 </div>
-                 
-                 <div className="flex gap-3">
-                    <button 
-                      onClick={() => setSelectedOrder(null)}
-                      className="px-4 py-2 border border-stone-300 rounded-lg text-stone-600 hover:bg-stone-50 transition-colors"
-                    >
-                      Close
-                    </button>
-                    <button 
-                      onClick={handleUpdateStatus}
-                      className="px-4 py-2 bg-royal-700 text-white rounded-lg hover:bg-royal-800 transition-colors shadow-sm"
-                    >
-                      Update Status
-                    </button>
+               <div className="pt-4 border-t border-stone-100">
+                 <h4 className="text-sm font-bold text-stone-900 uppercase tracking-wide mb-3">Update Status</h4>
+                 <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                        <select
+                        value={newStatus}
+                        onChange={(e) => setNewStatus(e.target.value as OrderStatus)}
+                        className="flex-1 px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-royal-500"
+                        >
+                        {orderStatuses.map(status => (
+                            <option key={status} value={status}>{status}</option>
+                        ))}
+                        </select>
+                    </div>
+                    <div>
+                        <textarea
+                            value={statusNote}
+                            onChange={(e) => setStatusNote(e.target.value)}
+                            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-royal-500"
+                            placeholder="Add a status note (Optional)..."
+                            rows={2}
+                        />
+                    </div>
+                    <div className="flex justify-end gap-3">
+                        <button 
+                        onClick={() => setSelectedOrder(null)}
+                        className="px-4 py-2 border border-stone-300 rounded-lg text-stone-600 hover:bg-stone-50 transition-colors"
+                        >
+                        Close
+                        </button>
+                        <button 
+                        onClick={handleUpdateStatus}
+                        className="px-4 py-2 bg-royal-700 text-white rounded-lg hover:bg-royal-800 transition-colors shadow-sm"
+                        >
+                        Update Status
+                        </button>
+                    </div>
                  </div>
                </div>
             </div>

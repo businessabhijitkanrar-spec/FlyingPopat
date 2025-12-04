@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Menu, X, User as UserIcon, LogOut, LayoutDashboard, Package } from 'lucide-react';
@@ -31,10 +30,10 @@ export const Navbar: React.FC = () => {
           {/* Logo */}
           <Link to="/" className="flex-shrink-0 flex items-center gap-2" onClick={closeMenu}>
             <div className="w-8 h-8 bg-royal-700 rounded-tr-xl rounded-bl-xl flex items-center justify-center">
-              <span className="text-white font-serif font-bold text-lg">V</span>
+              <span className="text-white font-serif font-bold text-lg">F</span>
             </div>
             <span className="font-serif text-2xl font-bold text-stone-900 tracking-wide">
-              VASTRA<span className="text-royal-700">.AI</span>
+              FLYING<span className="text-royal-700">POPAT</span>
             </span>
           </Link>
 
@@ -87,7 +86,7 @@ export const Navbar: React.FC = () => {
                         <Link 
                           to="/my-orders" 
                           onClick={() => setShowProfileMenu(false)}
-                          className="w-full text-left px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 flex items-center gap-2"
+                          className={`w-full text-left px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 flex items-center gap-2 ${isAdmin ? 'hidden' : ''}`}
                         >
                           <Package size={14} /> My Orders
                         </Link>
@@ -134,9 +133,12 @@ export const Navbar: React.FC = () => {
           <div className="px-4 pt-2 pb-6 space-y-2">
             <Link to="/" onClick={closeMenu} className="block px-3 py-2 rounded-md text-base font-medium text-stone-700 hover:bg-stone-50 hover:text-royal-700">Home</Link>
             <Link to="/catalog" onClick={closeMenu} className="block px-3 py-2 rounded-md text-base font-medium text-stone-700 hover:bg-stone-50 hover:text-royal-700">Collection</Link>
-            <Link to="/cart" onClick={closeMenu} className="block px-3 py-2 rounded-md text-base font-medium text-stone-700 hover:bg-stone-50 hover:text-royal-700">Cart ({cartCount})</Link>
             
-            {user && (
+            {!isAdmin && (
+              <Link to="/cart" onClick={closeMenu} className="block px-3 py-2 rounded-md text-base font-medium text-stone-700 hover:bg-stone-50 hover:text-royal-700">Cart ({cartCount})</Link>
+            )}
+            
+            {user && !isAdmin && (
               <Link to="/my-orders" onClick={closeMenu} className="block px-3 py-2 rounded-md text-base font-medium text-stone-700 hover:bg-stone-50 hover:text-royal-700">My Orders</Link>
             )}
 

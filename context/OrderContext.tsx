@@ -1,12 +1,14 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { Order, OrderStatus } from '../types';
+import { Order, OrderStatus, RefundStatus } from '../types';
 import { db, isFirebaseConfigured } from '../firebase-config';
 import { collection, updateDoc, doc, onSnapshot, query, orderBy, setDoc } from 'firebase/firestore';
 
 interface OrderContextType {
   orders: Order[];
   addOrder: (order: Order) => void;
-  updateOrderStatus: (orderId: string, status: OrderStatus) => void;
+  updateOrderStatus: (orderId: string, status: OrderStatus, note?: string) => void;
+  updateRefundStatus: (orderId: string, status: RefundStatus) => void;
   cancelOrder: (orderId: string) => void;
 }
 
@@ -55,18 +57,39 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
-  const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
+  const updateOrderStatus = async (orderId: string, status: OrderStatus, note?: string) => {
+    const updateData: any = { status: status };
+    if (note) updateData.statusNote = note;
+
     if (isFirebaseConfigured && db) {
       try {
          const orderRef = doc(db, "orders", orderId);
-         await updateDoc(orderRef, { status: status });
+         await updateDoc(orderRef, updateData);
       } catch (e) {
          console.error("Error updating status: ", e);
       }
     } else {
       // Mock Mode
       setOrders(prev => {
-        const updated = prev.map(o => o.id === orderId ? { ...o, status } : o);
+        const updated = prev.map(o => o.id === orderId ? { ...o, ...updateData } : o);
+        localStorage.setItem('vastra_orders', JSON.stringify(updated));
+        return updated;
+      });
+    }
+  };
+
+  const updateRefundStatus = async (orderId: string, status: RefundStatus) => {
+    if (isFirebaseConfigured && db) {
+      try {
+         const orderRef = doc(db, "orders", orderId);
+         await updateDoc(orderRef, { refundStatus: status });
+      } catch (e) {
+         console.error("Error updating refund status: ", e);
+      }
+    } else {
+      // Mock Mode
+      setOrders(prev => {
+        const updated = prev.map(o => o.id === orderId ? { ...o, refundStatus: status } : o);
         localStorage.setItem('vastra_orders', JSON.stringify(updated));
         return updated;
       });
@@ -74,17 +97,19 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const cancelOrder = async (orderId: string) => {
+    const updates = { status: 'Cancelled' as OrderStatus, refundStatus: 'Pending' as RefundStatus };
+    
     if (isFirebaseConfigured && db) {
       try {
          const orderRef = doc(db, "orders", orderId);
-         await updateDoc(orderRef, { status: 'Cancelled' });
+         await updateDoc(orderRef, updates);
       } catch (e) {
          console.error("Error cancelling order: ", e);
       }
     } else {
       // Mock Mode
       setOrders(prev => {
-        const updated = prev.map(o => o.id === orderId ? { ...o, status: 'Cancelled' as OrderStatus } : o);
+        const updated = prev.map(o => o.id === orderId ? { ...o, ...updates } : o);
         localStorage.setItem('vastra_orders', JSON.stringify(updated));
         return updated;
       });
@@ -92,7 +117,7 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   return (
-    <OrderContext.Provider value={{ orders, addOrder, updateOrderStatus, cancelOrder }}>
+    <OrderContext.Provider value={{ orders, addOrder, updateOrderStatus, updateRefundStatus, cancelOrder }}>
       {children}
     </OrderContext.Provider>
   );

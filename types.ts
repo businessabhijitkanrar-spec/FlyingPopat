@@ -3,12 +3,17 @@ export interface Product {
   id: string;
   name: string;
   description: string;
-  price: number;
+  price: number; // Selling Price
+  mrp?: number;  // Maximum Retail Price
   category: SareeCategory;
-  image: string;
+  image: string; // Main image for backward compatibility
+  images?: string[]; // Array of up to 3 images
   colors: string[];
   fabric: string;
   occasion: string[];
+  details?: string[];
+  care?: string[];
+  tags?: string[]; // 'New Arrival', 'Hot Selling', 'Best Value'
 }
 
 export enum SareeCategory {
@@ -47,6 +52,7 @@ export interface User {
 }
 
 export type OrderStatus = 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
+export type RefundStatus = 'Pending' | 'Processed' | 'Failed';
 
 export interface Order {
   id: string;
@@ -58,7 +64,12 @@ export interface Order {
   zip: string;
   date: string;
   status: OrderStatus;
-  total: number;
+  statusNote?: string; // Added for admin notes
+  refundStatus?: RefundStatus;
+  total: number; // Final payable amount
+  subtotal?: number;
+  discount?: number;
+  couponCode?: string;
   itemsSummary: string;
 }
 
@@ -74,4 +85,21 @@ export interface Feedback {
   reason?: string; // For cancellations
   comment: string;
   date: string;
+}
+
+export interface Inquiry {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  date: string;
+  status: 'New' | 'Read';
+}
+
+export interface Coupon {
+  id: string;
+  code: string;
+  discountPercentage: number;
+  isActive: boolean;
 }

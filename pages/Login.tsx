@@ -49,7 +49,8 @@ export const Login: React.FC = () => {
       }
       
       // Redirect logic
-      if (!isRegistering && role === 'admin') {
+      // Check for specific admin email OR explicit admin role selection
+      if (!isRegistering && (role === 'admin' || email === 'flyingpopat@gmail.com')) {
           navigate('/admin', { replace: true });
       } else {
           navigate(from, { replace: true });
@@ -83,13 +84,13 @@ export const Login: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="mx-auto h-16 w-16 bg-royal-700 rounded-tr-xl rounded-bl-xl flex items-center justify-center mb-4">
-             <span className="text-white font-serif font-bold text-3xl">V</span>
+             <span className="text-white font-serif font-bold text-3xl">F</span>
           </div>
           <h2 className="font-serif text-3xl font-bold text-stone-900">
             {isRegistering ? 'Create Account' : 'Welcome Back'}
           </h2>
           <p className="mt-2 text-sm text-stone-600">
-            {isRegistering ? 'Join Vastra AI today' : 'Sign in to access your account'}
+            {isRegistering ? 'Join FlyingPopat today' : 'Sign in to access your account'}
           </p>
         </div>
         
