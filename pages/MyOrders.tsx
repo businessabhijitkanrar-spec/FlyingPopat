@@ -174,7 +174,7 @@ export const MyOrders: React.FC = () => {
                         </button>
                       )}
                       
-                      {order.status === 'Pending' && (
+                      {(order.status === 'Pending' || order.status === 'Processing') && (
                         <button 
                           onClick={() => setCancellingOrder(order)}
                           className="flex items-center gap-2 px-4 py-2 border border-red-200 text-red-600 bg-white rounded-lg text-sm font-medium hover:bg-red-50 transition-colors"
