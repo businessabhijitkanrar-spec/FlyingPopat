@@ -5,7 +5,8 @@ export interface Product {
   description: string;
   price: number; // Selling Price
   mrp?: number;  // Maximum Retail Price
-  category: SareeCategory;
+  section: 'Saree' | 'Kids'; // New field to separate catalog pages
+  category: string; // Changed from enum to string to allow flexibility, but we will still use the enum for dropdowns
   image: string; // Main image for backward compatibility
   images?: string[]; // Array of up to 3 images
   colors: string[];
@@ -16,13 +17,20 @@ export interface Product {
   tags?: string[]; // 'New Arrival', 'Hot Selling', 'Best Value'
 }
 
-export enum SareeCategory {
+export enum ProductCategory {
+  // Sarees
   BANARASI = 'Banarasi',
   KANJEEVARAM = 'Kanjeevaram',
   CHIFFON = 'Chiffon',
   COTTON = 'Cotton',
   GEORGETTE = 'Georgette',
-  LINEN = 'Linen'
+  LINEN = 'Linen',
+  // Kids
+  LEHENGA = 'Kids Lehenga',
+  KURTA_SET = 'Kids Kurta Set',
+  FROCK = 'Kids Frock',
+  SHERWANI = 'Kids Sherwani',
+  GOWN = 'Kids Gown'
 }
 
 export interface CartItem extends Product {

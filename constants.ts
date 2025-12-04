@@ -1,4 +1,5 @@
-import { Product, SareeCategory } from './types';
+
+import { Product, ProductCategory } from './types';
 
 export const PRODUCTS: Product[] = [
   {
@@ -6,18 +7,22 @@ export const PRODUCTS: Product[] = [
     name: 'Royal Crimson Banarasi',
     description: 'A handcrafted crimson red Banarasi silk saree with intricate golden zari work featuring traditional floral motifs. Perfect for weddings and grand celebrations.',
     price: 12500,
-    category: SareeCategory.BANARASI,
+    mrp: 15000,
+    section: 'Saree',
+    category: ProductCategory.BANARASI,
     image: 'https://picsum.photos/id/1080/600/800',
     colors: ['Red', 'Gold'],
     fabric: 'Pure Silk',
-    occasion: ['Wedding', 'Reception']
+    occasion: ['Wedding', 'Reception'],
+    tags: ['Hot Selling']
   },
   {
     id: '2',
     name: 'Midnight Blue Kanjeevaram',
     description: 'An exquisite midnight blue Kanjeevaram saree with a contrasting pink border and temple border design. Woven with pure mulberry silk.',
     price: 18900,
-    category: SareeCategory.KANJEEVARAM,
+    section: 'Saree',
+    category: ProductCategory.KANJEEVARAM,
     image: 'https://picsum.photos/id/106/600/800',
     colors: ['Blue', 'Pink'],
     fabric: 'Silk',
@@ -28,7 +33,8 @@ export const PRODUCTS: Product[] = [
     name: 'Sunset Orange Chiffon',
     description: 'Lightweight and breezy sunset orange chiffon saree with delicate sequins scattered throughout. Ideal for evening parties and summer events.',
     price: 4500,
-    category: SareeCategory.CHIFFON,
+    section: 'Saree',
+    category: ProductCategory.CHIFFON,
     image: 'https://picsum.photos/id/305/600/800',
     colors: ['Orange', 'Yellow'],
     fabric: 'Chiffon',
@@ -39,7 +45,8 @@ export const PRODUCTS: Product[] = [
     name: 'Emerald Green Georgette',
     description: 'A stunning emerald green georgette saree with Chikankari embroidery. Elegance personified for sophisticated gatherings.',
     price: 7800,
-    category: SareeCategory.GEORGETTE,
+    section: 'Saree',
+    category: ProductCategory.GEORGETTE,
     image: 'https://picsum.photos/id/550/600/800',
     colors: ['Green'],
     fabric: 'Georgette',
@@ -50,7 +57,8 @@ export const PRODUCTS: Product[] = [
     name: 'Ivory Handloom Cotton',
     description: 'Minimalist ivory handloom cotton saree with a simple golden border. Breathable and chic for office wear or day events.',
     price: 3200,
-    category: SareeCategory.COTTON,
+    section: 'Saree',
+    category: ProductCategory.COTTON,
     image: 'https://picsum.photos/id/600/600/800',
     colors: ['White', 'Gold'],
     fabric: 'Cotton',
@@ -61,7 +69,8 @@ export const PRODUCTS: Product[] = [
     name: 'Teal Blue Linen',
     description: 'Contemporary teal blue linen saree with silver motifs. A modern twist on traditional draping.',
     price: 4200,
-    category: SareeCategory.LINEN,
+    section: 'Saree',
+    category: ProductCategory.LINEN,
     image: 'https://picsum.photos/id/700/600/800',
     colors: ['Blue', 'Silver'],
     fabric: 'Linen',
@@ -72,7 +81,8 @@ export const PRODUCTS: Product[] = [
     name: 'Magenta Mysore Silk',
     description: 'Soft and lustrous magenta Mysore silk saree with a simple gold stripe pallu. Lightweight yet grand.',
     price: 9500,
-    category: SareeCategory.BANARASI, // Grouping under silk for simplicity in demo
+    section: 'Saree',
+    category: ProductCategory.BANARASI, // Grouping under silk for simplicity in demo
     image: 'https://picsum.photos/id/800/600/800',
     colors: ['Magenta', 'Gold'],
     fabric: 'Silk',
@@ -83,10 +93,50 @@ export const PRODUCTS: Product[] = [
     name: 'Floral Print Organza',
     description: 'Dreamy pastel floral print on high-quality organza fabric. A romantic choice for day weddings.',
     price: 6700,
-    category: SareeCategory.GEORGETTE, // Closest proxy
+    section: 'Saree',
+    category: ProductCategory.GEORGETTE, // Closest proxy
     image: 'https://picsum.photos/id/400/600/800',
     colors: ['Pink', 'White'],
     fabric: 'Organza',
     occasion: ['Party', 'Wedding']
+  },
+  // KIDS WEAR MOCK DATA
+  {
+    id: 'k1',
+    name: 'Little Princess Pink Lehenga',
+    description: 'A beautiful baby pink lehenga choli with delicate embroidery and mirror work. Comes with a matching net dupatta.',
+    price: 3500,
+    mrp: 4500,
+    section: 'Kids',
+    category: ProductCategory.LEHENGA,
+    image: 'https://picsum.photos/id/338/600/800',
+    colors: ['Pink', 'Silver'],
+    fabric: 'Silk Blend',
+    occasion: ['Wedding', 'Festival'],
+    tags: ['New Arrival']
+  },
+  {
+    id: 'k2',
+    name: 'Royal Blue Boys Kurta Set',
+    description: 'Comfortable cotton blend kurta pajama set in royal blue. Features simple thread work on the collar.',
+    price: 1800,
+    section: 'Kids',
+    category: ProductCategory.KURTA_SET,
+    image: 'https://picsum.photos/id/433/600/800',
+    colors: ['Blue', 'White'],
+    fabric: 'Cotton Blend',
+    occasion: ['Festival', 'Casual']
+  },
+  {
+    id: 'k3',
+    name: 'Sunshine Yellow Frock',
+    description: 'Bright yellow flared frock with floral prints. Perfect for summer outings and birthday parties.',
+    price: 1200,
+    section: 'Kids',
+    category: ProductCategory.FROCK,
+    image: 'https://picsum.photos/id/514/600/800',
+    colors: ['Yellow', 'White'],
+    fabric: 'Cotton',
+    occasion: ['Party', 'Casual']
   }
 ];

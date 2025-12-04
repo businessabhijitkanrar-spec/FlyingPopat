@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Menu, X, User as UserIcon, LogOut, LayoutDashboard, Package } from 'lucide-react';
@@ -40,7 +41,8 @@ export const Navbar: React.FC = () => {
           {/* Desktop Menu */}
           <div className="hidden md:flex space-x-8 items-center">
             <Link to="/" className={`${isActive('/')} transition-colors duration-200`}>Home</Link>
-            <Link to="/catalog" className={`${isActive('/catalog')} transition-colors duration-200`}>Collection</Link>
+            <Link to="/sarees" className={`${isActive('/sarees')} transition-colors duration-200`}>Sarees</Link>
+            <Link to="/kids" className={`${isActive('/kids')} transition-colors duration-200`}>Kids Wear</Link>
             {isAdmin && (
               <Link to="/admin" className={`${isActive('/admin')} transition-colors duration-200 flex items-center gap-1`}>
                 <LayoutDashboard size={16} /> Dashboard
@@ -132,7 +134,8 @@ export const Navbar: React.FC = () => {
         <div className="md:hidden bg-white border-b border-stone-100 animate-fade-in-down">
           <div className="px-4 pt-2 pb-6 space-y-2">
             <Link to="/" onClick={closeMenu} className="block px-3 py-2 rounded-md text-base font-medium text-stone-700 hover:bg-stone-50 hover:text-royal-700">Home</Link>
-            <Link to="/catalog" onClick={closeMenu} className="block px-3 py-2 rounded-md text-base font-medium text-stone-700 hover:bg-stone-50 hover:text-royal-700">Collection</Link>
+            <Link to="/sarees" onClick={closeMenu} className="block px-3 py-2 rounded-md text-base font-medium text-stone-700 hover:bg-stone-50 hover:text-royal-700">Sarees</Link>
+            <Link to="/kids" onClick={closeMenu} className="block px-3 py-2 rounded-md text-base font-medium text-stone-700 hover:bg-stone-50 hover:text-royal-700">Kids Wear</Link>
             
             {!isAdmin && (
               <Link to="/cart" onClick={closeMenu} className="block px-3 py-2 rounded-md text-base font-medium text-stone-700 hover:bg-stone-50 hover:text-royal-700">Cart ({cartCount})</Link>

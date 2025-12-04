@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { HashRouter as Router, Routes, Route, useLocation, Link } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
@@ -43,10 +44,9 @@ const Footer = () => (
       <div>
         <h3 className="text-white font-semibold mb-4">Collection</h3>
         <ul className="space-y-2 text-sm">
-          <li><Link to="/catalog" className="hover:text-royal-500 transition-colors">Banarasi</Link></li>
-          <li><Link to="/catalog" className="hover:text-royal-500 transition-colors">Kanjeevaram</Link></li>
-          <li><Link to="/catalog" className="hover:text-royal-500 transition-colors">Chiffon</Link></li>
-          <li><Link to="/catalog" className="hover:text-royal-500 transition-colors">Wedding Edition</Link></li>
+          <li><Link to="/sarees" className="hover:text-royal-500 transition-colors">Sarees</Link></li>
+          <li><Link to="/kids" className="hover:text-royal-500 transition-colors">Kids Wear</Link></li>
+          <li><Link to="/sarees" className="hover:text-royal-500 transition-colors">Wedding Edition</Link></li>
         </ul>
       </div>
       <div>
@@ -85,7 +85,13 @@ const App: React.FC = () => {
                       <div className="flex-grow">
                         <Routes>
                           <Route path="/" element={<Home />} />
-                          <Route path="/catalog" element={<Catalog />} />
+                          {/* Routes for separate sections */}
+                          <Route path="/sarees" element={<Catalog section="Saree" />} />
+                          <Route path="/kids" element={<Catalog section="Kids" />} />
+                          
+                          {/* Generic Catalog Fallback */}
+                          <Route path="/catalog" element={<Catalog section="All" />} />
+                          
                           <Route path="/product/:id" element={<ProductDetails />} />
                           <Route path="/cart" element={<Cart />} />
                           <Route path="/checkout" element={<Checkout />} />

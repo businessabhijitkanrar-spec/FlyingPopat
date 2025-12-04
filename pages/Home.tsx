@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ArrowRight, Star, Sparkles, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -14,7 +15,7 @@ export const Home: React.FC = () => {
       <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img 
-            src="https://picsum.photos/id/400/1920/1080" 
+            src="https://lh3.googleusercontent.com/d/16KK9KqWXaGl7_28yfAaroL6JqxU4j0zB" 
             alt="Silk Saree Background" 
             className="w-full h-full object-cover"
           />

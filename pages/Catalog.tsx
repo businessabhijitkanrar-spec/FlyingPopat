@@ -1,21 +1,46 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { ProductCard } from '../components/ProductCard';
-import { SareeCategory } from '../types';
+import { ProductCategory } from '../types';
 import { Filter, X } from 'lucide-react';
 import { useProducts } from '../context/ProductContext';
 
-export const Catalog: React.FC = () => {
+interface CatalogProps {
+  section?: 'Saree' | 'Kids' | 'All';
+}
+
+export const Catalog: React.FC<CatalogProps> = ({ section = 'All' }) => {
   const { products } = useProducts();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [priceRange, setPriceRange] = useState<number>(20000);
   const [showFilters, setShowFilters] = useState(false);
 
-  const categories = ['All', ...Object.values(SareeCategory)];
+  // Reset filters when section changes
+  useEffect(() => {
+    setSelectedCategory('All');
+    setPriceRange(20000);
+  }, [section]);
+
+  // Determine available categories based on the current section
+  const availableCategories = section === 'All' 
+    ? Object.values(ProductCategory)
+    : section === 'Saree' 
+      ? [ProductCategory.BANARASI, ProductCategory.KANJEEVARAM, ProductCategory.CHIFFON, ProductCategory.COTTON, ProductCategory.GEORGETTE, ProductCategory.LINEN]
+      : [ProductCategory.LEHENGA, ProductCategory.KURTA_SET, ProductCategory.FROCK, ProductCategory.SHERWANI, ProductCategory.GOWN];
+
+  const categories = ['All', ...availableCategories];
 
   const filteredProducts = products.filter(product => {
+    // 1. Filter by Section
+    const sectionMatch = section === 'All' || product.section === section;
+    
+    // 2. Filter by Category
     const categoryMatch = selectedCategory === 'All' || product.category === selectedCategory;
+    
+    // 3. Filter by Price
     const priceMatch = product.price <= priceRange;
-    return categoryMatch && priceMatch;
+    
+    return sectionMatch && categoryMatch && priceMatch;
   });
 
   return (
@@ -24,8 +49,14 @@ export const Catalog: React.FC = () => {
         
         <div className="flex flex-col md:flex-row justify-between items-end mb-8">
           <div>
-            <h1 className="font-serif text-4xl font-bold text-stone-900 mb-2">Our Collection</h1>
-            <p className="text-stone-600">Explore our diverse range of traditional and modern drapes.</p>
+            <h1 className="font-serif text-4xl font-bold text-stone-900 mb-2">
+              {section === 'All' ? 'Full Collection' : section === 'Saree' ? 'Saree Collection' : 'Kids Wear'}
+            </h1>
+            <p className="text-stone-600">
+              {section === 'Kids' 
+                ? 'Adorable and comfortable ethnic wear for the little ones.' 
+                : 'Explore our diverse range of traditional and modern drapes.'}
+            </p>
           </div>
         </div>
 
@@ -79,16 +110,16 @@ export const Catalog: React.FC = () => {
                 </div>
                 <input 
                   type="range" 
-                  min="2000" 
-                  max="20000" 
+                  min="500" 
+                  max="30000" 
                   step="500"
                   value={priceRange}
                   onChange={(e) => setPriceRange(parseInt(e.target.value))}
                   className="w-full h-2 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-royal-700"
                 />
                 <div className="flex justify-between text-xs text-stone-400 mt-2">
-                  <span>₹2,000</span>
-                  <span>₹20,000+</span>
+                  <span>₹500</span>
+                  <span>₹30,000+</span>
                 </div>
               </div>
             </div>
@@ -103,7 +134,7 @@ export const Catalog: React.FC = () => {
                 ))
               ) : (
                 <div className="col-span-full py-20 text-center">
-                  <p className="text-xl text-stone-500">No sarees found matching your criteria.</p>
+                  <p className="text-xl text-stone-500">No products found matching your criteria.</p>
                   <button 
                     onClick={() => {setSelectedCategory('All'); setPriceRange(20000);}}
                     className="mt-4 text-royal-700 font-medium hover:underline"

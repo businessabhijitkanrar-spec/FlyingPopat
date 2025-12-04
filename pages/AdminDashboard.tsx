@@ -7,7 +7,7 @@ import { useFeedback } from '../context/FeedbackContext';
 import { useInquiry } from '../context/InquiryContext';
 import { useCoupon } from '../context/CouponContext';
 import { isFirebaseConfigured } from '../firebase-config';
-import { SareeCategory, Product, Order, OrderStatus, RefundStatus, Coupon } from '../types';
+import { ProductCategory, Product, Order, OrderStatus, RefundStatus, Coupon } from '../types';
 import { 
   Package, 
   TrendingUp, 
@@ -74,7 +74,8 @@ export const AdminDashboard: React.FC = () => {
     name: '',
     price: 0,
     mrp: 0,
-    category: SareeCategory.BANARASI,
+    section: 'Saree', // Default section
+    category: ProductCategory.BANARASI,
     description: '',
     fabric: '',
     colors: [],
@@ -105,7 +106,8 @@ export const AdminDashboard: React.FC = () => {
       name: '',
       price: 0,
       mrp: 0,
-      category: SareeCategory.BANARASI,
+      section: 'Saree',
+      category: ProductCategory.BANARASI,
       description: '',
       fabric: '',
       colors: [],
@@ -313,6 +315,12 @@ export const AdminDashboard: React.FC = () => {
 
   const orderStatuses: OrderStatus[] = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
   const refundStatuses: RefundStatus[] = ['Pending', 'Processed', 'Failed'];
+
+  // Categories helper
+  const SAREE_CATEGORIES = [ProductCategory.BANARASI, ProductCategory.KANJEEVARAM, ProductCategory.CHIFFON, ProductCategory.COTTON, ProductCategory.GEORGETTE, ProductCategory.LINEN];
+  const KIDS_CATEGORIES = [ProductCategory.LEHENGA, ProductCategory.KURTA_SET, ProductCategory.FROCK, ProductCategory.SHERWANI, ProductCategory.GOWN];
+
+  const currentCategoryOptions = newProduct.section === 'Kids' ? KIDS_CATEGORIES : SAREE_CATEGORIES;
 
   return (
     <div className="min-h-screen bg-stone-50 flex flex-col md:flex-row">
@@ -792,7 +800,7 @@ export const AdminDashboard: React.FC = () => {
                 onClick={() => { setShowAddModal(true); setIsEditing(false); resetForm(); }}
                 className="w-full sm:w-auto flex items-center justify-center gap-2 bg-royal-700 text-white px-5 py-2.5 rounded-lg hover:bg-royal-800 transition-colors shadow-md font-medium"
               >
-                <Plus size={18} /> Add New Saree
+                <Plus size={18} /> Add New Item
               </button>
             </div>
 
@@ -803,6 +811,7 @@ export const AdminDashboard: React.FC = () => {
                   <thead className="bg-stone-50 text-stone-900 font-semibold uppercase tracking-wider text-xs border-b border-stone-100">
                     <tr>
                       <th className="px-6 py-4">Product</th>
+                      <th className="px-6 py-4">Section</th>
                       <th className="px-6 py-4">Category</th>
                       <th className="px-6 py-4">Pricing</th>
                       <th className="px-6 py-4 text-right">Actions</th>
@@ -818,9 +827,12 @@ export const AdminDashboard: React.FC = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-royal-50 text-royal-700">
-                            {product.category}
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.section === 'Kids' ? 'bg-pink-50 text-pink-700' : 'bg-royal-50 text-royal-700'}`}>
+                            {product.section}
                           </span>
+                        </td>
+                        <td className="px-6 py-4">
+                           {product.category}
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex flex-col">
@@ -951,17 +963,40 @@ export const AdminDashboard: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">Category</label>
-                <select 
-                  value={newProduct.category}
-                  onChange={e => setNewProduct({...newProduct, category: e.target.value as SareeCategory})}
-                  className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-royal-500"
-                >
-                  {Object.values(SareeCategory).map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
+              {/* Section and Category Selection */}
+              <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-stone-700 mb-1">Section</label>
+                    <select 
+                      value={newProduct.section}
+                      onChange={e => {
+                          const newSection = e.target.value as 'Saree' | 'Kids';
+                          setNewProduct({
+                              ...newProduct, 
+                              section: newSection,
+                              // Reset category when section changes to prevent mismatch
+                              category: newSection === 'Kids' ? ProductCategory.LEHENGA : ProductCategory.BANARASI 
+                          });
+                      }}
+                      className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-royal-500"
+                    >
+                      <option value="Saree">Saree</option>
+                      <option value="Kids">Kids Wear</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-stone-700 mb-1">Category</label>
+                    <select 
+                      value={newProduct.category}
+                      onChange={e => setNewProduct({...newProduct, category: e.target.value})}
+                      className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-royal-500"
+                    >
+                      {currentCategoryOptions.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                  </div>
               </div>
 
               <div>
