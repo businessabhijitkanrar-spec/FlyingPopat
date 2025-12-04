@@ -51,8 +51,16 @@ export interface User {
   countryCode?: string;
 }
 
-export type OrderStatus = 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
+export type OrderStatus = 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled' | 'Return Requested' | 'Exchange Requested' | 'Returned' | 'Exchanged';
 export type RefundStatus = 'Pending' | 'Processed' | 'Failed';
+
+export interface ReturnRequest {
+  type: 'Return' | 'Exchange';
+  reason: string;
+  comment: string;
+  image: string; // Base64 or URL
+  requestDate: string;
+}
 
 export interface Order {
   id: string;
@@ -63,9 +71,11 @@ export interface Order {
   city: string;
   zip: string;
   date: string;
+  deliveryDate?: string; // Added to track 3-day return policy
   status: OrderStatus;
   statusNote?: string; // Added for admin notes
   refundStatus?: RefundStatus;
+  returnRequest?: ReturnRequest; // Store return details
   total: number; // Final payable amount
   subtotal?: number;
   discount?: number;

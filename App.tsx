@@ -17,6 +17,7 @@ import { Login } from './pages/Login';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { MyOrders } from './pages/MyOrders';
 import { ContactUs } from './pages/ContactUs';
+import { ReturnPolicy } from './pages/ReturnPolicy';
 import { GeminiStylist } from './components/GeminiStylist';
 
 const ScrollToTop = () => {
@@ -49,7 +50,7 @@ const Footer = () => (
         <h3 className="text-white font-semibold mb-4">Support</h3>
         <ul className="space-y-2 text-sm">
           <li><a href="#" className="hover:text-royal-500 transition-colors">Order Tracking</a></li>
-          <li><a href="#" className="hover:text-royal-500 transition-colors">Returns & Exchanges</a></li>
+          <li><Link to="/return-policy" className="hover:text-royal-500 transition-colors">Returns & Exchanges</Link></li>
           <li><a href="#" className="hover:text-royal-500 transition-colors">Saree Care Guide</a></li>
           <li><Link to="/contact" className="hover:text-royal-500 transition-colors">Contact Us</Link></li>
         </ul>
@@ -88,6 +89,7 @@ const App: React.FC = () => {
                           <Route path="/my-orders" element={<MyOrders />} />
                           <Route path="/admin" element={<AdminDashboard />} />
                           <Route path="/contact" element={<ContactUs />} />
+                          <Route path="/return-policy" element={<ReturnPolicy />} />
                           <Route path="*" element={<Home />} />
                         </Routes>
                       </div>

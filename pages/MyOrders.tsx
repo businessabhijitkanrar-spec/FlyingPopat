@@ -5,11 +5,11 @@ import { useAuth } from '../context/AuthContext';
 import { useOrders } from '../context/OrderContext';
 import { useFeedback } from '../context/FeedbackContext';
 import { Order, OrderStatus } from '../types';
-import { Package, Truck, CheckCircle, Clock, XCircle, MapPin, ChevronDown, ChevronUp, Star, AlertCircle, X, RefreshCcw } from 'lucide-react';
+import { Package, Truck, CheckCircle, Clock, XCircle, MapPin, ChevronDown, ChevronUp, Star, AlertCircle, X, RefreshCcw, ArrowLeftRight, Upload, Image as ImageIcon } from 'lucide-react';
 
 export const MyOrders: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
-  const { orders, cancelOrder } = useOrders();
+  const { orders, cancelOrder, requestReturn } = useOrders();
   const { addFeedback } = useFeedback();
   
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
@@ -18,12 +18,19 @@ export const MyOrders: React.FC = () => {
   const [trackingOrder, setTrackingOrder] = useState<Order | null>(null);
   const [cancellingOrder, setCancellingOrder] = useState<Order | null>(null);
   const [reviewingOrder, setReviewingOrder] = useState<Order | null>(null);
+  const [returningOrder, setReturningOrder] = useState<Order | null>(null);
 
   // Form States
   const [cancellationReason, setCancellationReason] = useState('');
   const [cancellationComment, setCancellationComment] = useState('');
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
+  
+  // Return Form States
+  const [returnType, setReturnType] = useState<'Return' | 'Exchange'>('Return');
+  const [returnReason, setReturnReason] = useState('');
+  const [returnComment, setReturnComment] = useState('');
+  const [returnImage, setReturnImage] = useState('');
 
   if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />;
@@ -76,6 +83,51 @@ export const MyOrders: React.FC = () => {
     }
   };
 
+  const handleReturnSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (returningOrder && returnReason && returnImage) {
+        requestReturn(returningOrder.id, {
+            type: returnType,
+            reason: returnReason,
+            comment: returnComment,
+            image: returnImage,
+            requestDate: new Date().toISOString().split('T')[0]
+        });
+        setReturningOrder(null);
+        setReturnReason('');
+        setReturnComment('');
+        setReturnImage('');
+        alert(`${returnType} Request Submitted Successfully.`);
+    } else {
+        alert("Please fill all fields and upload an image.");
+    }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setReturnImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const isReturnEligible = (order: Order) => {
+     if (order.status !== 'Delivered') return false;
+     
+     // Mocking Delivery Date if not present for logic check
+     // In a real app, deliveryDate would be set when status changes to Delivered
+     const deliveryDate = order.deliveryDate ? new Date(order.deliveryDate) : new Date(order.date); 
+     
+     const diffTime = Math.abs(new Date().getTime() - deliveryDate.getTime());
+     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+     
+     // 3 days policy
+     return diffDays <= 3;
+  };
+
   const getTrackingSteps = (status: OrderStatus) => {
     const steps = [
       { status: 'Pending', label: 'Order Placed', icon: Clock },
@@ -85,8 +137,8 @@ export const MyOrders: React.FC = () => {
     ];
 
     const currentIdx = steps.findIndex(s => s.status === status);
-    // If Cancelled, show special state
-    if (status === 'Cancelled') return [];
+    // If Cancelled or Return, show special state in list if needed, but for simple tracking:
+    if (status === 'Cancelled' || status.includes('Return') || status.includes('Exchange')) return [];
 
     return steps.map((step, idx) => ({
       ...step,
@@ -119,6 +171,7 @@ export const MyOrders: React.FC = () => {
                           <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium 
                             ${order.status === 'Delivered' ? 'bg-green-100 text-green-700' : 
                               order.status === 'Cancelled' ? 'bg-red-100 text-red-700' : 
+                              (order.status.includes('Return') || order.status.includes('Exchange')) ? 'bg-orange-100 text-orange-700' :
                               'bg-blue-50 text-blue-700'}`}>
                             {order.status}
                           </span>
@@ -137,7 +190,7 @@ export const MyOrders: React.FC = () => {
                 {expandedOrder === order.id && (
                   <div className="border-t border-stone-100 bg-stone-50/50 p-6 animate-fade-in-down">
                     
-                    {/* Refund Status Display */}
+                    {/* Refund/Return Status Display */}
                     {order.status === 'Cancelled' && (
                         <div className="bg-red-50 border border-red-100 rounded-lg p-4 mb-6 flex items-start gap-3">
                             <RefreshCcw className="text-red-500 mt-0.5" size={20} />
@@ -145,6 +198,17 @@ export const MyOrders: React.FC = () => {
                                 <h4 className="font-bold text-red-700 text-sm">Order Cancelled</h4>
                                 <p className="text-red-600 text-sm mt-1">
                                     Refund Status: <span className="font-bold uppercase tracking-wide bg-white px-2 py-0.5 rounded border border-red-200 ml-1">{order.refundStatus || 'Pending'}</span>
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                    {(order.status.includes('Return') || order.status.includes('Exchange')) && (
+                        <div className="bg-orange-50 border border-orange-100 rounded-lg p-4 mb-6 flex items-start gap-3">
+                            <ArrowLeftRight className="text-orange-500 mt-0.5" size={20} />
+                            <div>
+                                <h4 className="font-bold text-orange-700 text-sm">{order.status}</h4>
+                                <p className="text-orange-600 text-sm mt-1">
+                                    Your request is being processed. We will contact you shortly.
                                 </p>
                             </div>
                         </div>
@@ -165,7 +229,7 @@ export const MyOrders: React.FC = () => {
                     </div>
 
                     <div className="flex flex-wrap gap-3 pt-4 border-t border-stone-200">
-                      {order.status !== 'Cancelled' && (
+                      {(order.status !== 'Cancelled' && !order.status.includes('Return') && !order.status.includes('Exchange')) && (
                         <button 
                           onClick={() => setTrackingOrder(order)}
                           className="flex items-center gap-2 px-4 py-2 bg-royal-700 text-white rounded-lg text-sm font-medium hover:bg-royal-800 transition-colors"
@@ -180,6 +244,16 @@ export const MyOrders: React.FC = () => {
                           className="flex items-center gap-2 px-4 py-2 border border-red-200 text-red-600 bg-white rounded-lg text-sm font-medium hover:bg-red-50 transition-colors"
                         >
                           <XCircle size={16} /> Cancel Order
+                        </button>
+                      )}
+                      
+                      {/* Return / Exchange Button */}
+                      {isReturnEligible(order) && !order.status.includes('Return') && !order.status.includes('Exchange') && (
+                        <button 
+                          onClick={() => setReturningOrder(order)}
+                          className="flex items-center gap-2 px-4 py-2 border border-stone-300 text-stone-700 bg-white rounded-lg text-sm font-medium hover:bg-stone-50 transition-colors"
+                        >
+                          <ArrowLeftRight size={16} /> Return / Exchange
                         </button>
                       )}
 
@@ -216,7 +290,6 @@ export const MyOrders: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-8 relative">
-                   {/* Vertical Line for Desktop / Horizontal for Mobile could be complex, doing simple list tracking */}
                    <div className="space-y-6">
                      {getTrackingSteps(trackingOrder.status).map((step, idx) => (
                        <div key={idx} className="flex gap-4">
@@ -282,6 +355,99 @@ export const MyOrders: React.FC = () => {
                    <button type="button" onClick={() => setCancellingOrder(null)} className="flex-1 py-2 border border-stone-300 rounded-lg text-stone-600 hover:bg-stone-50">Keep Order</button>
                    <button type="submit" className="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Confirm Cancel</button>
                  </div>
+              </form>
+           </div>
+        </div>
+      )}
+
+      {/* RETURN / EXCHANGE MODAL */}
+      {returningOrder && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 animate-fade-in-down max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
+                    <ArrowLeftRight size={20} className="text-royal-700"/> Return or Exchange
+                </h3>
+                <button onClick={() => setReturningOrder(null)}><X size={20} className="text-stone-400" /></button>
+              </div>
+              
+              <div className="mb-6 bg-blue-50 p-3 rounded-lg border border-blue-100 text-xs text-blue-700">
+                  Policy: Returns/Exchanges are accepted within 3 days of delivery. Product must be unused.
+              </div>
+
+              <form onSubmit={handleReturnSubmit} className="space-y-4">
+                 <div className="flex bg-stone-100 p-1 rounded-lg">
+                    <button
+                        type="button"
+                        onClick={() => setReturnType('Return')}
+                        className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${returnType === 'Return' ? 'bg-white shadow-sm text-royal-700' : 'text-stone-500'}`}
+                    >
+                        Return
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setReturnType('Exchange')}
+                        className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${returnType === 'Exchange' ? 'bg-white shadow-sm text-royal-700' : 'text-stone-500'}`}
+                    >
+                        Exchange
+                    </button>
+                 </div>
+
+                 <div>
+                   <label className="block text-sm font-medium text-stone-700 mb-1">Reason</label>
+                   <select 
+                    required 
+                    value={returnReason}
+                    onChange={(e) => setReturnReason(e.target.value)}
+                    className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-royal-500"
+                   >
+                     <option value="">Select a reason</option>
+                     <option value="Defective / Damaged">Defective / Damaged</option>
+                     <option value="Wrong Item Received">Wrong Item Received</option>
+                     <option value="Size / Fit Issue">Size / Fit Issue</option>
+                     <option value="Quality Not As Expected">Quality Not As Expected</option>
+                   </select>
+                 </div>
+
+                 <div>
+                    <label className="block text-sm font-medium text-stone-700 mb-1">Upload Product Image (Required)</label>
+                    <div className="border-2 border-dashed border-stone-300 rounded-lg p-4 text-center hover:bg-stone-50 transition-colors">
+                        <input 
+                            type="file" 
+                            accept="image/*" 
+                            required
+                            onChange={handleImageUpload}
+                            className="hidden" 
+                            id="return-image-upload"
+                        />
+                        <label htmlFor="return-image-upload" className="cursor-pointer flex flex-col items-center">
+                            {returnImage ? (
+                                <img src={returnImage} alt="Preview" className="h-32 object-contain rounded-md" />
+                            ) : (
+                                <>
+                                    <Upload size={24} className="text-stone-400 mb-2" />
+                                    <span className="text-sm text-stone-600">Click to upload image</span>
+                                    <span className="text-xs text-stone-400 mt-1">Proof of condition</span>
+                                </>
+                            )}
+                        </label>
+                    </div>
+                 </div>
+
+                 <div>
+                    <label className="block text-sm font-medium text-stone-700 mb-1">Additional Comments</label>
+                    <textarea 
+                      rows={3}
+                      value={returnComment}
+                      onChange={(e) => setReturnComment(e.target.value)}
+                      className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-royal-500"
+                      placeholder="Describe the issue..."
+                    />
+                 </div>
+
+                 <button type="submit" className="w-full py-2.5 bg-royal-700 text-white rounded-lg hover:bg-royal-800 font-medium transition-colors">
+                    Submit Request
+                 </button>
               </form>
            </div>
         </div>

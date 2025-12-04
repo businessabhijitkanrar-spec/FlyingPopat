@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { Order, OrderStatus, RefundStatus } from '../types';
+import { Order, OrderStatus, RefundStatus, ReturnRequest } from '../types';
 import { db, isFirebaseConfigured } from '../firebase-config';
 import { collection, updateDoc, doc, onSnapshot, query, orderBy, setDoc } from 'firebase/firestore';
 
@@ -10,6 +10,7 @@ interface OrderContextType {
   updateOrderStatus: (orderId: string, status: OrderStatus, note?: string) => void;
   updateRefundStatus: (orderId: string, status: RefundStatus) => void;
   cancelOrder: (orderId: string) => void;
+  requestReturn: (orderId: string, request: ReturnRequest) => void;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
@@ -60,6 +61,11 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const updateOrderStatus = async (orderId: string, status: OrderStatus, note?: string) => {
     const updateData: any = { status: status };
     if (note) updateData.statusNote = note;
+    
+    // If delivering, set the delivery date automatically for tracking return policy
+    if (status === 'Delivered') {
+        updateData.deliveryDate = new Date().toISOString().split('T')[0];
+    }
 
     if (isFirebaseConfigured && db) {
       try {
@@ -116,8 +122,32 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
+  const requestReturn = async (orderId: string, request: ReturnRequest) => {
+    const status = request.type === 'Return' ? 'Return Requested' : 'Exchange Requested';
+    const updates = { 
+        status: status as OrderStatus, 
+        returnRequest: request 
+    };
+
+    if (isFirebaseConfigured && db) {
+      try {
+         const orderRef = doc(db, "orders", orderId);
+         await updateDoc(orderRef, updates);
+      } catch (e) {
+         console.error("Error requesting return: ", e);
+      }
+    } else {
+      // Mock Mode
+      setOrders(prev => {
+        const updated = prev.map(o => o.id === orderId ? { ...o, ...updates } : o);
+        localStorage.setItem('vastra_orders', JSON.stringify(updated));
+        return updated;
+      });
+    }
+  };
+
   return (
-    <OrderContext.Provider value={{ orders, addOrder, updateOrderStatus, updateRefundStatus, cancelOrder }}>
+    <OrderContext.Provider value={{ orders, addOrder, updateOrderStatus, updateRefundStatus, cancelOrder, requestReturn }}>
       {children}
     </OrderContext.Provider>
   );

@@ -73,7 +73,7 @@ export const Home: React.FC = () => {
               <Star className="text-royal-700" size={32} />
             </div>
             <h3 className="font-serif text-xl font-bold mb-3">Authentic Weaves</h3>
-            <p className="text-stone-600">Sourced directly from weavers in Varanasi, Kanchipuram, and Mysore.</p>
+            <p className="text-stone-600">Sourced directly from weavers in Phulia, Santipur, and Many Places.</p>
           </div>
           <div className="p-6">
             <div className="w-16 h-16 bg-royal-50 rounded-full flex items-center justify-center mx-auto mb-6">
