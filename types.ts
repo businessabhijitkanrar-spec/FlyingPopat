@@ -19,18 +19,17 @@ export interface Product {
 
 export enum ProductCategory {
   // Sarees
-  BANARASI = 'Banarasi',
-  KANJEEVARAM = 'Kanjeevaram',
-  CHIFFON = 'Chiffon',
   COTTON = 'Cotton',
-  GEORGETTE = 'Georgette',
   LINEN = 'Linen',
+  TISSUE = 'Tissue',
+  TAANT = 'Taant',
+  JAMDANI = 'Jamdani',
+  
   // Kids
-  LEHENGA = 'Kids Lehenga',
-  KURTA_SET = 'Kids Kurta Set',
-  FROCK = 'Kids Frock',
-  SHERWANI = 'Kids Sherwani',
-  GOWN = 'Kids Gown'
+  DUNGAREES = 'Dungarees',
+  DRESSES = 'Dresses',
+  SWEAT_WEAR = 'Sweat Wear',
+  WAIST_COAT = 'Waist Coat'
 }
 
 export interface CartItem extends Product {

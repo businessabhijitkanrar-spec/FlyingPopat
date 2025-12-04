@@ -12,21 +12,27 @@ interface CatalogProps {
 export const Catalog: React.FC<CatalogProps> = ({ section = 'All' }) => {
   const { products } = useProducts();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [priceRange, setPriceRange] = useState<number>(20000);
+  const [priceRange, setPriceRange] = useState<number>(25000);
   const [showFilters, setShowFilters] = useState(false);
 
   // Reset filters when section changes
   useEffect(() => {
     setSelectedCategory('All');
-    setPriceRange(20000);
+    setPriceRange(25000);
   }, [section]);
 
   // Determine available categories based on the current section
   const availableCategories = section === 'All' 
     ? Object.values(ProductCategory)
     : section === 'Saree' 
-      ? [ProductCategory.BANARASI, ProductCategory.KANJEEVARAM, ProductCategory.CHIFFON, ProductCategory.COTTON, ProductCategory.GEORGETTE, ProductCategory.LINEN]
-      : [ProductCategory.LEHENGA, ProductCategory.KURTA_SET, ProductCategory.FROCK, ProductCategory.SHERWANI, ProductCategory.GOWN];
+      ? [
+          ProductCategory.COTTON, ProductCategory.LINEN,
+          ProductCategory.TISSUE, ProductCategory.TAANT, ProductCategory.JAMDANI
+        ]
+      : [
+          ProductCategory.DUNGAREES, ProductCategory.DRESSES, 
+          ProductCategory.SWEAT_WEAR, ProductCategory.WAIST_COAT
+        ];
 
   const categories = ['All', ...availableCategories];
 
@@ -54,7 +60,7 @@ export const Catalog: React.FC<CatalogProps> = ({ section = 'All' }) => {
             </h1>
             <p className="text-stone-600">
               {section === 'Kids' 
-                ? 'Adorable and comfortable ethnic wear for the little ones.' 
+                ? 'Adorable and comfortable wear for the little ones.' 
                 : 'Explore our diverse range of traditional and modern drapes.'}
             </p>
           </div>
@@ -110,15 +116,15 @@ export const Catalog: React.FC<CatalogProps> = ({ section = 'All' }) => {
                 </div>
                 <input 
                   type="range" 
-                  min="500" 
+                  min="100" 
                   max="30000" 
-                  step="500"
+                  step="100"
                   value={priceRange}
                   onChange={(e) => setPriceRange(parseInt(e.target.value))}
                   className="w-full h-2 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-royal-700"
                 />
                 <div className="flex justify-between text-xs text-stone-400 mt-2">
-                  <span>₹500</span>
+                  <span>₹100</span>
                   <span>₹30,000+</span>
                 </div>
               </div>
@@ -136,7 +142,7 @@ export const Catalog: React.FC<CatalogProps> = ({ section = 'All' }) => {
                 <div className="col-span-full py-20 text-center">
                   <p className="text-xl text-stone-500">No products found matching your criteria.</p>
                   <button 
-                    onClick={() => {setSelectedCategory('All'); setPriceRange(20000);}}
+                    onClick={() => {setSelectedCategory('All'); setPriceRange(25000);}}
                     className="mt-4 text-royal-700 font-medium hover:underline"
                   >
                     Clear Filters

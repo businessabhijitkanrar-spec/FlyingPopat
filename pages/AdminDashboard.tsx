@@ -75,7 +75,7 @@ export const AdminDashboard: React.FC = () => {
     price: 0,
     mrp: 0,
     section: 'Saree', // Default section
-    category: ProductCategory.BANARASI,
+    category: ProductCategory.COTTON,
     description: '',
     fabric: '',
     colors: [],
@@ -107,7 +107,7 @@ export const AdminDashboard: React.FC = () => {
       price: 0,
       mrp: 0,
       section: 'Saree',
-      category: ProductCategory.BANARASI,
+      category: ProductCategory.COTTON,
       description: '',
       fabric: '',
       colors: [],
@@ -317,8 +317,15 @@ export const AdminDashboard: React.FC = () => {
   const refundStatuses: RefundStatus[] = ['Pending', 'Processed', 'Failed'];
 
   // Categories helper
-  const SAREE_CATEGORIES = [ProductCategory.BANARASI, ProductCategory.KANJEEVARAM, ProductCategory.CHIFFON, ProductCategory.COTTON, ProductCategory.GEORGETTE, ProductCategory.LINEN];
-  const KIDS_CATEGORIES = [ProductCategory.LEHENGA, ProductCategory.KURTA_SET, ProductCategory.FROCK, ProductCategory.SHERWANI, ProductCategory.GOWN];
+  const SAREE_CATEGORIES = [
+    ProductCategory.COTTON, ProductCategory.LINEN,
+    ProductCategory.TISSUE, ProductCategory.TAANT, ProductCategory.JAMDANI
+  ];
+  
+  const KIDS_CATEGORIES = [
+    ProductCategory.DUNGAREES, ProductCategory.DRESSES, 
+    ProductCategory.SWEAT_WEAR, ProductCategory.WAIST_COAT
+  ];
 
   const currentCategoryOptions = newProduct.section === 'Kids' ? KIDS_CATEGORIES : SAREE_CATEGORIES;
 
@@ -975,7 +982,7 @@ export const AdminDashboard: React.FC = () => {
                               ...newProduct, 
                               section: newSection,
                               // Reset category when section changes to prevent mismatch
-                              category: newSection === 'Kids' ? ProductCategory.LEHENGA : ProductCategory.BANARASI 
+                              category: newSection === 'Kids' ? ProductCategory.DUNGAREES : ProductCategory.COTTON 
                           });
                       }}
                       className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-royal-500"

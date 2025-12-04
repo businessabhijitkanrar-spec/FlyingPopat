@@ -4,53 +4,17 @@ import { Product, ProductCategory } from './types';
 export const PRODUCTS: Product[] = [
   {
     id: '1',
-    name: 'Royal Crimson Banarasi',
-    description: 'A handcrafted crimson red Banarasi silk saree with intricate golden zari work featuring traditional floral motifs. Perfect for weddings and grand celebrations.',
+    name: 'Traditional Red Jamdani',
+    description: 'A handcrafted crimson red Jamdani saree with intricate traditional motifs. Lightweight and perfect for cultural events.',
     price: 12500,
     mrp: 15000,
     section: 'Saree',
-    category: ProductCategory.BANARASI,
+    category: ProductCategory.JAMDANI,
     image: 'https://picsum.photos/id/1080/600/800',
     colors: ['Red', 'Gold'],
-    fabric: 'Pure Silk',
+    fabric: 'Cotton Silk',
     occasion: ['Wedding', 'Reception'],
     tags: ['Hot Selling']
-  },
-  {
-    id: '2',
-    name: 'Midnight Blue Kanjeevaram',
-    description: 'An exquisite midnight blue Kanjeevaram saree with a contrasting pink border and temple border design. Woven with pure mulberry silk.',
-    price: 18900,
-    section: 'Saree',
-    category: ProductCategory.KANJEEVARAM,
-    image: 'https://picsum.photos/id/106/600/800',
-    colors: ['Blue', 'Pink'],
-    fabric: 'Silk',
-    occasion: ['Festival', 'Wedding']
-  },
-  {
-    id: '3',
-    name: 'Sunset Orange Chiffon',
-    description: 'Lightweight and breezy sunset orange chiffon saree with delicate sequins scattered throughout. Ideal for evening parties and summer events.',
-    price: 4500,
-    section: 'Saree',
-    category: ProductCategory.CHIFFON,
-    image: 'https://picsum.photos/id/305/600/800',
-    colors: ['Orange', 'Yellow'],
-    fabric: 'Chiffon',
-    occasion: ['Party', 'Casual']
-  },
-  {
-    id: '4',
-    name: 'Emerald Green Georgette',
-    description: 'A stunning emerald green georgette saree with Chikankari embroidery. Elegance personified for sophisticated gatherings.',
-    price: 7800,
-    section: 'Saree',
-    category: ProductCategory.GEORGETTE,
-    image: 'https://picsum.photos/id/550/600/800',
-    colors: ['Green'],
-    fabric: 'Georgette',
-    occasion: ['Party', 'Festival']
   },
   {
     id: '5',
@@ -76,67 +40,79 @@ export const PRODUCTS: Product[] = [
     fabric: 'Linen',
     occasion: ['Office', 'Casual']
   },
-   {
+  {
     id: '7',
-    name: 'Magenta Mysore Silk',
-    description: 'Soft and lustrous magenta Mysore silk saree with a simple gold stripe pallu. Lightweight yet grand.',
-    price: 9500,
+    name: 'Golden Tissue Saree',
+    description: 'A magnificent golden tissue saree that shimmers under the lights. Perfect for evening receptions.',
+    price: 8500,
     section: 'Saree',
-    category: ProductCategory.BANARASI, // Grouping under silk for simplicity in demo
+    category: ProductCategory.TISSUE,
     image: 'https://picsum.photos/id/800/600/800',
-    colors: ['Magenta', 'Gold'],
-    fabric: 'Silk',
-    occasion: ['Festival', 'Wedding']
+    colors: ['Gold'],
+    fabric: 'Tissue',
+    occasion: ['Wedding', 'Party']
   },
   {
     id: '8',
-    name: 'Floral Print Organza',
-    description: 'Dreamy pastel floral print on high-quality organza fabric. A romantic choice for day weddings.',
-    price: 6700,
+    name: 'Bengal Taant Saree',
+    description: 'Authentic Bengal Taant saree known for its crisp texture and airy feel. Ideal for humid weather.',
+    price: 2700,
     section: 'Saree',
-    category: ProductCategory.GEORGETTE, // Closest proxy
+    category: ProductCategory.TAANT,
     image: 'https://picsum.photos/id/400/600/800',
-    colors: ['Pink', 'White'],
-    fabric: 'Organza',
-    occasion: ['Party', 'Wedding']
+    colors: ['White', 'Red'],
+    fabric: 'Cotton',
+    occasion: ['Daily Wear', 'Puja']
   },
   // KIDS WEAR MOCK DATA
   {
     id: 'k1',
-    name: 'Little Princess Pink Lehenga',
-    description: 'A beautiful baby pink lehenga choli with delicate embroidery and mirror work. Comes with a matching net dupatta.',
-    price: 3500,
-    mrp: 4500,
+    name: 'Denim Dungaree Set',
+    description: 'Comfortable denim dungarees with a striped t-shirt. Playful and durable.',
+    price: 1500,
+    mrp: 1800,
     section: 'Kids',
-    category: ProductCategory.LEHENGA,
+    category: ProductCategory.DUNGAREES,
     image: 'https://picsum.photos/id/338/600/800',
-    colors: ['Pink', 'Silver'],
-    fabric: 'Silk Blend',
-    occasion: ['Wedding', 'Festival'],
+    colors: ['Blue', 'White'],
+    fabric: 'Denim',
+    occasion: ['Casual'],
     tags: ['New Arrival']
   },
   {
     id: 'k2',
-    name: 'Royal Blue Boys Kurta Set',
-    description: 'Comfortable cotton blend kurta pajama set in royal blue. Features simple thread work on the collar.',
-    price: 1800,
+    name: 'Floral Summer Dress',
+    description: 'Lightweight cotton dress with vibrant floral prints.',
+    price: 1200,
     section: 'Kids',
-    category: ProductCategory.KURTA_SET,
+    category: ProductCategory.DRESSES,
     image: 'https://picsum.photos/id/433/600/800',
-    colors: ['Blue', 'White'],
-    fabric: 'Cotton Blend',
-    occasion: ['Festival', 'Casual']
+    colors: ['Yellow', 'Pink'],
+    fabric: 'Cotton',
+    occasion: ['Party', 'Casual']
   },
   {
     id: 'k3',
-    name: 'Sunshine Yellow Frock',
-    description: 'Bright yellow flared frock with floral prints. Perfect for summer outings and birthday parties.',
-    price: 1200,
+    name: 'Cozy Sweat Wear Set',
+    description: 'Warm and cozy sweat wear set for winter days. Includes sweatshirt and joggers.',
+    price: 2200,
     section: 'Kids',
-    category: ProductCategory.FROCK,
+    category: ProductCategory.SWEAT_WEAR,
     image: 'https://picsum.photos/id/514/600/800',
-    colors: ['Yellow', 'White'],
-    fabric: 'Cotton',
-    occasion: ['Party', 'Casual']
+    colors: ['Grey', 'Black'],
+    fabric: 'Cotton Fleece',
+    occasion: ['Winter', 'Casual']
+  },
+  {
+    id: 'k4',
+    name: 'Formal Waist Coat',
+    description: 'Smart waist coat to layer over shirts for a formal look.',
+    price: 1400,
+    section: 'Kids',
+    category: ProductCategory.WAIST_COAT,
+    image: 'https://picsum.photos/id/515/600/800',
+    colors: ['Black'],
+    fabric: 'Blend',
+    occasion: ['Party', 'Wedding']
   }
 ];
