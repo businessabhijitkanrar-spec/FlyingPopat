@@ -14,6 +14,7 @@ import { Catalog } from './pages/Catalog';
 import { ProductDetails } from './pages/ProductDetails';
 import { Cart } from './pages/Cart';
 import { Checkout } from './pages/Checkout';
+import { PaymentVerification } from './pages/PaymentVerification';
 import { Login } from './pages/Login';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { MyOrders } from './pages/MyOrders';
@@ -95,6 +96,7 @@ const App: React.FC = () => {
                           <Route path="/product/:id" element={<ProductDetails />} />
                           <Route path="/cart" element={<Cart />} />
                           <Route path="/checkout" element={<Checkout />} />
+                          <Route path="/payment-verification" element={<PaymentVerification />} />
                           <Route path="/login" element={<Login />} />
                           <Route path="/my-orders" element={<MyOrders />} />
                           <Route path="/admin" element={<AdminDashboard />} />

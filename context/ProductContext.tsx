@@ -10,7 +10,9 @@ import {
   doc, 
   setDoc,
   updateDoc,
-  increment
+  increment,
+  getDocs,
+  query
 } from 'firebase/firestore';
 
 interface ProductContextType {
@@ -19,12 +21,28 @@ interface ProductContextType {
   updateProduct: (product: Product) => void;
   deleteProduct: (productId: string) => void;
   updateProductStock: (productId: string, quantityToDeduct: number) => Promise<void>;
+  restoreDefaults: () => Promise<void>;
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
 export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
+
+  // Define seedProducts before useEffect to ensure it's available
+  const seedProducts = async () => {
+    try {
+      localStorage.setItem('flyingpopat_products_seeded', 'true');
+      if (INITIAL_PRODUCTS.length > 0 && isFirebaseConfigured && db) {
+        console.log("Seeding Database with Initial Products...");
+        for (const product of INITIAL_PRODUCTS) {
+          await setDoc(doc(db, "products", product.id), product);
+        }
+      }
+    } catch (error) {
+      console.error("Error seeding products:", error);
+    }
+  };
 
   useEffect(() => {
     if (isFirebaseConfigured && db) {
@@ -55,20 +73,6 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
       }
     }
   }, []);
-
-  const seedProducts = async () => {
-    try {
-      localStorage.setItem('flyingpopat_products_seeded', 'true');
-      if (INITIAL_PRODUCTS.length > 0) {
-        console.log("Seeding Database with Initial Products...");
-        for (const product of INITIAL_PRODUCTS) {
-          await setDoc(doc(db, "products", product.id), product);
-        }
-      }
-    } catch (error) {
-      console.error("Error seeding products:", error);
-    }
-  };
 
   const addProduct = async (product: Product) => {
     if (isFirebaseConfigured && db) {
@@ -146,8 +150,31 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
+  const restoreDefaults = async () => {
+    if (isFirebaseConfigured && db) {
+        try {
+            console.log("Restoring default products...");
+            const q = query(collection(db, "products"));
+            const snapshot = await getDocs(q);
+            const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+            await Promise.all(deletePromises);
+
+            if (INITIAL_PRODUCTS.length > 0) {
+               const addPromises = INITIAL_PRODUCTS.map(product => setDoc(doc(db, "products", product.id), product));
+               await Promise.all(addPromises);
+            }
+            console.log("Products restored to defaults.");
+        } catch (error) {
+            console.error("Error restoring defaults:", error);
+        }
+    } else {
+        setProducts(INITIAL_PRODUCTS);
+        localStorage.setItem('flyingpopat_products', JSON.stringify(INITIAL_PRODUCTS));
+    }
+  };
+
   return (
-    <ProductContext.Provider value={{ products, addProduct, updateProduct, deleteProduct, updateProductStock }}>
+    <ProductContext.Provider value={{ products, addProduct, updateProduct, deleteProduct, updateProductStock, restoreDefaults }}>
       {children}
     </ProductContext.Provider>
   );

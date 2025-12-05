@@ -90,7 +90,8 @@ export interface Order {
   couponCode?: string;
   itemsSummary: string;
   paymentMethod: 'cod' | 'online';
-  paymentId?: string; // Razorpay Payment ID
+  paymentId?: string; // Optional now
+  paymentScreenshot?: string; // New field for manual UPI
 }
 
 export type FeedbackType = 'cancellation' | 'review';
