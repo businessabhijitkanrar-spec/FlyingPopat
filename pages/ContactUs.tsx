@@ -14,6 +14,9 @@ export const ContactUs: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  const SUBJECT_LIMIT = 100;
+  const MESSAGE_LIMIT = 500;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -33,6 +36,14 @@ export const ContactUs: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    if (name === 'subject' && value.length > SUBJECT_LIMIT) return;
+    if (name === 'message' && value.length > MESSAGE_LIMIT) return;
+    
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -113,8 +124,9 @@ export const ContactUs: React.FC = () => {
                       <input 
                         type="text" 
                         required
+                        name="name"
                         value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                        onChange={handleChange}
                         className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none"
                       />
                     </div>
@@ -123,29 +135,40 @@ export const ContactUs: React.FC = () => {
                       <input 
                         type="email" 
                         required
+                        name="email"
                         value={formData.email}
-                        onChange={(e) => setFormData({...formData, email: e.target.value})}
+                        onChange={handleChange}
                         className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-1">Subject</label>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-sm font-medium text-stone-700">Subject</label>
+                      <span className="text-xs text-stone-400">{formData.subject.length}/{SUBJECT_LIMIT}</span>
+                    </div>
                     <input 
                       type="text" 
                       required
+                      name="subject"
                       value={formData.subject}
-                      onChange={(e) => setFormData({...formData, subject: e.target.value})}
+                      onChange={handleChange}
+                      maxLength={SUBJECT_LIMIT}
                       className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-1">Message</label>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-sm font-medium text-stone-700">Message</label>
+                      <span className="text-xs text-stone-400">{formData.message.length}/{MESSAGE_LIMIT}</span>
+                    </div>
                     <textarea 
                       rows={4}
                       required
+                      name="message"
                       value={formData.message}
-                      onChange={(e) => setFormData({...formData, message: e.target.value})}
+                      onChange={handleChange}
+                      maxLength={MESSAGE_LIMIT}
                       className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none resize-none"
                     ></textarea>
                   </div>

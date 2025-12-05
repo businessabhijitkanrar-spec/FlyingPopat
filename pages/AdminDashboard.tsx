@@ -6,7 +6,7 @@ import { useOrders } from '../context/OrderContext';
 import { useCoupon } from '../context/CouponContext';
 import { useInquiry } from '../context/InquiryContext';
 import { isFirebaseConfigured } from '../firebase-config';
-import { ProductCategory, Product, Order, OrderStatus, RefundStatus } from '../types';
+import { ProductCategory, Product, Order, OrderStatus, RefundStatus, Inquiry } from '../types';
 import { 
   Package, 
   TrendingUp, 
@@ -58,6 +58,8 @@ export const AdminDashboard: React.FC = () => {
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
+  
   const [newStatus, setNewStatus] = useState<OrderStatus>('Pending');
   const [statusNote, setStatusNote] = useState('');
   const [newRefundStatus, setNewRefundStatus] = useState<RefundStatus>('Pending');
@@ -767,7 +769,11 @@ export const AdminDashboard: React.FC = () => {
                   </thead>
                   <tbody className="divide-y divide-stone-100">
                     {inquiries.map((inquiry) => (
-                      <tr key={inquiry.id} className={`hover:bg-stone-50/50 transition-colors ${inquiry.status === 'New' ? 'bg-blue-50/30' : ''}`}>
+                      <tr 
+                        key={inquiry.id} 
+                        onClick={() => { setSelectedInquiry(inquiry); if(inquiry.status === 'New') markAsRead(inquiry.id); }}
+                        className={`hover:bg-stone-50/50 transition-colors cursor-pointer ${inquiry.status === 'New' ? 'bg-blue-50/30' : ''}`}
+                      >
                         <td className="px-6 py-4">
                            {inquiry.status === 'New' ? (
                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700">
@@ -785,7 +791,7 @@ export const AdminDashboard: React.FC = () => {
                         <td className="px-6 py-4 font-medium">{inquiry.subject}</td>
                         <td className="px-6 py-4 max-w-sm truncate" title={inquiry.message}>{inquiry.message}</td>
                         <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end gap-2">
+                          <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                             {inquiry.status === 'New' && (
                                 <button 
                                 onClick={() => markAsRead(inquiry.id)}
@@ -1079,6 +1085,57 @@ export const AdminDashboard: React.FC = () => {
                  </div>
                </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Inquiry Message Modal */}
+      {selectedInquiry && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 animate-fade-in-down max-h-[90vh] overflow-y-auto">
+             <div className="flex justify-between items-start mb-6 border-b border-stone-100 pb-4">
+                <div>
+                   <h3 className="font-serif text-xl font-bold text-stone-900">Message Details</h3>
+                   <span className="text-xs text-stone-500">{selectedInquiry.date}</span>
+                </div>
+                <button onClick={() => setSelectedInquiry(null)} className="text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-full p-1 transition-colors">
+                   <Plus className="rotate-45" size={24} />
+                </button>
+             </div>
+             
+             <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="bg-stone-50 p-3 rounded-lg">
+                      <p className="text-xs text-stone-500 uppercase font-bold tracking-wide mb-1">From</p>
+                      <p className="font-medium text-stone-900">{selectedInquiry.name}</p>
+                   </div>
+                   <div className="bg-stone-50 p-3 rounded-lg">
+                      <p className="text-xs text-stone-500 uppercase font-bold tracking-wide mb-1">Email</p>
+                      <a href={`mailto:${selectedInquiry.email}`} className="font-medium text-royal-700 hover:underline">{selectedInquiry.email}</a>
+                   </div>
+                </div>
+
+                <div>
+                   <p className="text-xs text-stone-500 uppercase font-bold tracking-wide mb-2">Subject</p>
+                   <p className="font-serif text-lg font-bold text-stone-800">{selectedInquiry.subject}</p>
+                </div>
+
+                <div>
+                   <p className="text-xs text-stone-500 uppercase font-bold tracking-wide mb-2">Message Content</p>
+                   <div className="bg-stone-50 p-4 rounded-xl border border-stone-200 text-stone-700 leading-relaxed whitespace-pre-wrap text-sm">
+                      {selectedInquiry.message}
+                   </div>
+                </div>
+
+                <div className="flex justify-end pt-4">
+                   <button 
+                      onClick={() => setSelectedInquiry(null)}
+                      className="px-6 py-2 bg-royal-700 text-white rounded-lg hover:bg-royal-800 transition-colors shadow-sm font-medium"
+                   >
+                      Close
+                   </button>
+                </div>
+             </div>
           </div>
         </div>
       )}
