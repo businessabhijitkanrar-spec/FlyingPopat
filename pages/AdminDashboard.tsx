@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useProducts } from '../context/ProductContext';
 import { useOrders } from '../context/OrderContext';
 import { useCoupon } from '../context/CouponContext';
+import { useInquiry } from '../context/InquiryContext';
 import { isFirebaseConfigured } from '../firebase-config';
 import { ProductCategory, Product, Order, OrderStatus, RefundStatus } from '../types';
 import { 
@@ -33,7 +34,9 @@ import {
   RefreshCw,
   Bold,
   Italic,
-  List
+  List,
+  MessageSquare,
+  Mail
 } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
@@ -42,8 +45,9 @@ export const AdminDashboard: React.FC = () => {
   const { products, deleteProduct, addProduct, updateProduct, updateProductStock, restoreDefaults } = useProducts();
   const { orders, updateOrderStatus, updateRefundStatus } = useOrders();
   const { coupons, addCoupon, deleteCoupon, toggleCouponStatus } = useCoupon();
+  const { inquiries, markAsRead, deleteInquiry } = useInquiry();
   
-  const [activeTab, setActiveTab] = useState<'orders' | 'catalog' | 'customers' | 'coupons'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'catalog' | 'customers' | 'coupons' | 'inquiries'>('orders');
   
   const [showAddModal, setShowAddModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -395,6 +399,7 @@ export const AdminDashboard: React.FC = () => {
           <button onClick={() => setActiveTab('catalog')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'catalog' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}><Grid size={20} /> Catalog</button>
           <button onClick={() => setActiveTab('customers')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'customers' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}><Users size={20} /> Customers</button>
           <button onClick={() => setActiveTab('coupons')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'coupons' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}><TicketPercent size={20} /> Coupons</button>
+          <button onClick={() => setActiveTab('inquiries')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'inquiries' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}><MessageSquare size={20} /> Inquiries</button>
         </nav>
         
         <div className="p-6 mt-auto">
@@ -419,6 +424,7 @@ export const AdminDashboard: React.FC = () => {
             {activeTab === 'catalog' && 'Update your collection and manage inventory'}
             {activeTab === 'customers' && 'View registered customer details'}
             {activeTab === 'coupons' && 'Manage discount codes and promotions'}
+            {activeTab === 'inquiries' && 'View messages from the contact form'}
           </p>
         </div>
 
@@ -734,6 +740,75 @@ export const AdminDashboard: React.FC = () => {
                         <td colSpan={4} className="px-6 py-8 text-center text-stone-500">
                           No coupons found. Create one above.
                         </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* INQUIRIES TAB (Contact Form Messages) */}
+        {activeTab === 'inquiries' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm text-stone-600">
+                  <thead className="bg-stone-50 text-stone-900 font-semibold uppercase tracking-wider text-xs border-b border-stone-100">
+                    <tr>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4">Date</th>
+                      <th className="px-6 py-4">Name</th>
+                      <th className="px-6 py-4">Subject</th>
+                      <th className="px-6 py-4">Message</th>
+                      <th className="px-6 py-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100">
+                    {inquiries.map((inquiry) => (
+                      <tr key={inquiry.id} className={`hover:bg-stone-50/50 transition-colors ${inquiry.status === 'New' ? 'bg-blue-50/30' : ''}`}>
+                        <td className="px-6 py-4">
+                           {inquiry.status === 'New' ? (
+                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700">
+                               <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" /> New
+                             </span>
+                           ) : (
+                             <span className="text-xs text-stone-400 font-medium">Read</span>
+                           )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-xs">{inquiry.date}</td>
+                        <td className="px-6 py-4">
+                           <div className="font-medium text-stone-900">{inquiry.name}</div>
+                           <div className="text-xs text-stone-400">{inquiry.email}</div>
+                        </td>
+                        <td className="px-6 py-4 font-medium">{inquiry.subject}</td>
+                        <td className="px-6 py-4 max-w-sm truncate" title={inquiry.message}>{inquiry.message}</td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            {inquiry.status === 'New' && (
+                                <button 
+                                onClick={() => markAsRead(inquiry.id)}
+                                className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                title="Mark as Read"
+                                >
+                                <CheckCircle size={18} />
+                                </button>
+                            )}
+                            <button 
+                              onClick={() => deleteInquiry(inquiry.id)}
+                              className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Delete Message"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {inquiries.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-8 text-center text-stone-500">No inquiries received yet.</td>
                       </tr>
                     )}
                   </tbody>
