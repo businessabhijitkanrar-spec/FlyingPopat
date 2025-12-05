@@ -63,12 +63,14 @@ export const PaymentVerification: React.FC = () => {
     }
 
     setIsSubmitting(true);
+    setError('');
 
     try {
       // Create Items Summary String
       const itemsSummary = cart.map(item => `${item.name} (${item.quantity})`).join(', ');
 
       // Create New Order
+      // FIX: Ensure couponCode is null if undefined, as Firestore doesn't accept undefined
       const newOrder = {
         id: `#ORD-${Math.floor(1000 + Math.random() * 9000)}`,
         customerName: shippingData.name,
@@ -82,7 +84,7 @@ export const PaymentVerification: React.FC = () => {
         total: finalTotal,
         subtotal: cartSubtotal,
         discount: discountAmount,
-        couponCode: appliedCoupon?.code,
+        couponCode: appliedCoupon?.code || null, 
         itemsSummary: itemsSummary,
         paymentMethod: 'online' as const,
         paymentScreenshot: screenshot // Save the screenshot
@@ -97,9 +99,11 @@ export const PaymentVerification: React.FC = () => {
 
       clearCart();
       setIsSuccess(true);
-    } catch (err) {
-      console.error(err);
-      setError("Failed to place order. Please try again.");
+    } catch (err: any) {
+      console.error("Order placement error:", err);
+      // Display the actual error message if available, or a fallback
+      const errorMessage = err.message || "Failed to place order. Please try again.";
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -192,39 +196,4 @@ export const PaymentVerification: React.FC = () => {
                     </div>
                   ) : (
                     <div className="flex flex-col items-center py-4">
-                      <div className="w-12 h-12 bg-royal-50 text-royal-700 rounded-full flex items-center justify-center mb-3">
-                         <ImageIcon size={24} />
-                      </div>
-                      <p className="font-medium text-stone-700">Click to upload screenshot</p>
-                      <p className="text-xs text-stone-400 mt-1">Supported: JPG, PNG, JPEG</p>
-                    </div>
-                  )}
-                </div>
-                {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-              </div>
-            </div>
-
-            <div className="pt-6 border-t border-stone-100">
-              <button 
-                onClick={handleConfirmOrder}
-                disabled={isSubmitting}
-                className="w-full bg-royal-700 text-white py-4 rounded-xl font-bold hover:bg-royal-800 transition-colors shadow-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="animate-spin" size={20} /> Verifying...
-                  </>
-                ) : (
-                  <>
-                    Confirm Payment & Place Order <ArrowRight size={20} />
-                  </>
-                )}
-              </button>
-            </div>
-
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+                      <div className="w-12 h-12 bg-royal-50 text-royal-700 rounded-full flex items
