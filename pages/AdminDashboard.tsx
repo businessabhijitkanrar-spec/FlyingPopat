@@ -375,9 +375,9 @@ export const AdminDashboard: React.FC = () => {
           <button onClick={() => setActiveTab('orders')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'orders' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}><ShoppingBag size={20} /> Orders</button>
           <button onClick={() => setActiveTab('catalog')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'catalog' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}><Grid size={20} /> Catalog</button>
           <button onClick={() => setActiveTab('customers')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'customers' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}><Users size={20} /> Customers</button>
+          <button onClick={() => setActiveTab('coupons')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'coupons' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}><TicketPercent size={20} /> Coupons</button>
           <button onClick={() => setActiveTab('feedback')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'feedback' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}><MessageSquare size={20} /> Feedbacks</button>
           <button onClick={() => setActiveTab('inquiries')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'inquiries' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}><Inbox size={20} /> Inquiries</button>
-          <button onClick={() => setActiveTab('coupons')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'coupons' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}><TicketPercent size={20} /> Coupons</button>
         </nav>
         
         <div className="p-6 mt-auto">
@@ -569,8 +569,159 @@ export const AdminDashboard: React.FC = () => {
           </div>
         )}
         
-        {/* Placeholder for other tabs (Customers, etc.) */}
-        {(activeTab === 'customers' || activeTab === 'feedback' || activeTab === 'inquiries' || activeTab === 'coupons') && (
+        {/* CUSTOMERS TAB */}
+        {activeTab === 'customers' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between gap-4">
+               <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
+                <input 
+                  type="text" 
+                  placeholder="Search customers..." 
+                  value={customerSearchTerm}
+                  onChange={(e) => setCustomerSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-royal-500 w-full bg-white"
+                />
+              </div>
+              <button 
+                onClick={handleExportCustomers}
+                className="flex items-center gap-2 px-4 py-2 bg-royal-700 text-white rounded-lg hover:bg-royal-800 transition-colors shadow-sm font-medium"
+              >
+                <Download size={18} /> Export Data
+              </button>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm text-stone-600">
+                  <thead className="bg-stone-50 text-stone-900 font-semibold uppercase tracking-wider text-xs border-b border-stone-100">
+                    <tr>
+                      <th className="px-6 py-4">Customer</th>
+                      <th className="px-6 py-4">Contact</th>
+                      <th className="px-6 py-4">Phone</th>
+                      <th className="px-6 py-4">Password</th>
+                      <th className="px-6 py-4">Joined Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100">
+                    {filteredCustomers.map((customer) => (
+                      <tr key={customer.id} className="hover:bg-stone-50/50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <img src={customer.avatar || `https://ui-avatars.com/api/?name=${customer.name}`} alt="" className="w-8 h-8 rounded-full bg-stone-100" />
+                            <span className="font-medium text-stone-900">{customer.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">{customer.email}</td>
+                        <td className="px-6 py-4">{customer.countryCode} {customer.phone}</td>
+                        <td className="px-6 py-4 font-mono text-xs bg-stone-50 px-2 py-1 rounded inline-block">{customer.password || '••••••'}</td>
+                        <td className="px-6 py-4">{customer.joinedDate || 'N/A'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {filteredCustomers.length === 0 && <div className="p-8 text-center text-stone-500">No customers found.</div>}
+            </div>
+          </div>
+        )}
+
+        {/* COUPONS TAB */}
+        {activeTab === 'coupons' && (
+          <div className="space-y-6">
+            {/* Add Coupon Form */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-stone-100">
+              <h3 className="font-bold text-lg text-stone-900 mb-4">Create New Coupon</h3>
+              <form onSubmit={handleAddCoupon} className="flex flex-col md:flex-row gap-4 md:items-end">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-stone-700 mb-1">Coupon Code</label>
+                  <input
+                    type="text"
+                    required
+                    value={newCouponCode}
+                    onChange={(e) => setNewCouponCode(e.target.value.toUpperCase())}
+                    placeholder="E.g. SUMMER20"
+                    className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none uppercase"
+                  />
+                </div>
+                <div className="w-full md:w-40">
+                  <label className="block text-sm font-medium text-stone-700 mb-1">Discount (%)</label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    max="100"
+                    value={newCouponDiscount}
+                    onChange={(e) => setNewCouponDiscount(Number(e.target.value))}
+                    className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-royal-700 text-white rounded-lg hover:bg-royal-800 transition-colors font-medium h-[42px]"
+                >
+                  Create Coupon
+                </button>
+              </form>
+            </div>
+
+            {/* Coupons List */}
+            <div className="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm text-stone-600">
+                  <thead className="bg-stone-50 text-stone-900 font-semibold uppercase tracking-wider text-xs border-b border-stone-100">
+                    <tr>
+                      <th className="px-6 py-4">Code</th>
+                      <th className="px-6 py-4">Discount</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100">
+                    {coupons.map((coupon) => (
+                      <tr key={coupon.id} className="hover:bg-stone-50/50">
+                        <td className="px-6 py-4 font-mono font-bold text-stone-900">{coupon.code}</td>
+                        <td className="px-6 py-4">{coupon.discountPercentage}%</td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${coupon.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                            {coupon.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => toggleCouponStatus(coupon.id, coupon.isActive)}
+                              className={`px-3 py-1 rounded-lg text-xs font-bold border ${coupon.isActive ? 'border-red-200 text-red-600 hover:bg-red-50' : 'border-green-200 text-green-600 hover:bg-green-50'}`}
+                            >
+                              {coupon.isActive ? 'Deactivate' : 'Activate'}
+                            </button>
+                            <button
+                              onClick={() => deleteCoupon(coupon.id)}
+                              className="p-1 text-stone-400 hover:text-red-600 transition-colors"
+                              title="Delete"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {coupons.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="px-6 py-8 text-center text-stone-500">
+                          No coupons found. Create one above.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Placeholder for Feedback and Inquiries */}
+        {(activeTab === 'feedback' || activeTab === 'inquiries') && (
             <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-8 text-center text-stone-500">
                 Content for {activeTab} goes here.
             </div>
