@@ -11,7 +11,7 @@ export const PRODUCTS: Product[] = [
     stock: 12,
     section: 'Saree',
     category: ProductCategory.JAMDANI,
-    image: 'https://picsum.photos/id/1080/600/800',
+    image: 'https://lh3.googleusercontent.com/d/16KK9KqWXaGl7_28yfAaroL6JqxU4j0zB',
     colors: ['Red', 'Gold'],
     fabric: 'Cotton Silk',
     occasion: ['Wedding', 'Reception'],
@@ -25,7 +25,7 @@ export const PRODUCTS: Product[] = [
     stock: 25,
     section: 'Saree',
     category: ProductCategory.COTTON,
-    image: 'https://picsum.photos/id/600/600/800',
+    image: 'https://lh3.googleusercontent.com/d/16KK9KqWXaGl7_28yfAaroL6JqxU4j0zB',
     colors: ['White', 'Gold'],
     fabric: 'Cotton',
     occasion: ['Office', 'Casual']
@@ -38,7 +38,7 @@ export const PRODUCTS: Product[] = [
     stock: 8,
     section: 'Saree',
     category: ProductCategory.LINEN,
-    image: 'https://picsum.photos/id/700/600/800',
+    image: 'https://lh3.googleusercontent.com/d/16KK9KqWXaGl7_28yfAaroL6JqxU4j0zB',
     colors: ['Blue', 'Silver'],
     fabric: 'Linen',
     occasion: ['Office', 'Casual']
@@ -51,7 +51,7 @@ export const PRODUCTS: Product[] = [
     stock: 5,
     section: 'Saree',
     category: ProductCategory.TISSUE,
-    image: 'https://picsum.photos/id/800/600/800',
+    image: 'https://lh3.googleusercontent.com/d/16KK9KqWXaGl7_28yfAaroL6JqxU4j0zB',
     colors: ['Gold'],
     fabric: 'Tissue',
     occasion: ['Wedding', 'Party']
@@ -64,7 +64,7 @@ export const PRODUCTS: Product[] = [
     stock: 0, // Mock Out of Stock
     section: 'Saree',
     category: ProductCategory.TAANT,
-    image: 'https://picsum.photos/id/400/600/800',
+    image: 'https://lh3.googleusercontent.com/d/16KK9KqWXaGl7_28yfAaroL6JqxU4j0zB',
     colors: ['White', 'Red'],
     fabric: 'Cotton',
     occasion: ['Daily Wear', 'Puja']

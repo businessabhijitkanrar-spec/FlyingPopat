@@ -89,7 +89,7 @@ export const AdminDashboard: React.FC = () => {
     details: [],
     care: [],
     tags: [],
-    image: 'https://picsum.photos/600/800?random=' + Date.now()
+    image: 'https://lh3.googleusercontent.com/d/16KK9KqWXaGl7_28yfAaroL6JqxU4j0zB'
   });
 
   // Local state for array inputs
@@ -107,6 +107,18 @@ export const AdminDashboard: React.FC = () => {
     return <Navigate to="/login" replace />;
   }
 
+  // Helper to convert Google Drive view links to direct links
+  const convertDriveLink = (url: string): string => {
+    if (url.includes('drive.google.com') && url.includes('/view')) {
+      // Extract ID
+      const idMatch = url.match(/\/d\/(.+?)\//);
+      if (idMatch && idMatch[1]) {
+        return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
+      }
+    }
+    return url;
+  };
+
   const resetForm = () => {
     setNewProduct({
       name: '',
@@ -122,7 +134,7 @@ export const AdminDashboard: React.FC = () => {
       details: [],
       care: [],
       tags: [],
-      image: 'https://picsum.photos/600/800?random=' + Date.now()
+      image: 'https://lh3.googleusercontent.com/d/16KK9KqWXaGl7_28yfAaroL6JqxU4j0zB'
     });
     setColorsInput('');
     setOccasionInput('');
@@ -236,8 +248,9 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const handleImageUrlChange = (value: string, index: number) => {
+    const directLink = convertDriveLink(value);
     const newImages = [...productImages];
-    newImages[index] = value;
+    newImages[index] = directLink;
     setProductImages(newImages);
   };
 
@@ -938,7 +951,7 @@ export const AdminDashboard: React.FC = () => {
                                 type="text" 
                                 value={img}
                                 onChange={e => handleImageUrlChange(e.target.value, index)}
-                                placeholder="Image URL"
+                                placeholder="Image URL (Google Drive supported)"
                                 className="flex-1 border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-royal-500 text-sm"
                               />
                               <label className="cursor-pointer bg-stone-100 border border-stone-300 rounded-lg px-3 py-2 hover:bg-stone-200 transition-colors flex items-center justify-center" title="Upload Image">
