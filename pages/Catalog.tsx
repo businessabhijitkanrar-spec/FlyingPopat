@@ -4,6 +4,7 @@ import { ProductCard } from '../components/ProductCard';
 import { ProductCategory } from '../types';
 import { Filter, X } from 'lucide-react';
 import { useProducts } from '../context/ProductContext';
+import { Schema } from '../components/Schema';
 
 interface CatalogProps {
   section?: 'Saree' | 'Kids' | 'All';
@@ -14,6 +15,18 @@ export const Catalog: React.FC<CatalogProps> = ({ section = 'All' }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [priceRange, setPriceRange] = useState<number>(25000);
   const [showFilters, setShowFilters] = useState(false);
+
+  const collectionSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": section === 'All' ? 'Full Collection' : `${section} Collection`,
+    "description": `Browse our exclusive collection of ${section === 'All' ? 'Sarees and Kids Wear' : section}.`,
+    "url": window.location.href,
+    "provider": {
+        "@type": "Organization",
+        "name": "FlyingPopat"
+    }
+  };
 
   // Reset filters when section changes
   useEffect(() => {
@@ -51,6 +64,7 @@ export const Catalog: React.FC<CatalogProps> = ({ section = 'All' }) => {
 
   return (
     <div className="min-h-screen bg-stone-50 pt-8 pb-20">
+      <Schema data={collectionSchema} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="flex flex-col md:flex-row justify-between items-end mb-8">

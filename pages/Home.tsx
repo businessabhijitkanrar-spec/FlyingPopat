@@ -4,13 +4,42 @@ import { ArrowRight, Star, Sparkles, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
 import { useProducts } from '../context/ProductContext';
+import { Schema } from '../components/Schema';
 
 export const Home: React.FC = () => {
   const { products } = useProducts();
   const featuredProducts = products.slice(0, 4);
 
+  const orgSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "FlyingPopat",
+    "url": window.location.origin,
+    "logo": "https://ui-avatars.com/api/?name=Flying+Popat&background=be185d&color=fff",
+    "description": "A luxury e-commerce platform for sarees featuring an AI-powered personal stylist.",
+    "foundingDate": "1957",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Hirapur",
+      "addressLocality": "Howrah",
+      "addressRegion": "West Bengal",
+      "postalCode": "711310",
+      "addressCountry": "IN"
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+91 9674283413",
+      "contactType": "customer service",
+      "areaServed": "IN",
+      "availableLanguage": "en"
+    },
+    "sameAs": []
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
+      <Schema data={orgSchema} />
+      
       {/* Hero Section */}
       <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">

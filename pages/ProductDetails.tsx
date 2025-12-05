@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext';
 import { useAuth } from '../context/AuthContext';
 import { ShoppingBag, ArrowLeft, Truck, ShieldCheck, RefreshCw, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
+import { Schema } from '../components/Schema';
 
 export const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +37,32 @@ export const ProductDetails: React.FC = () => {
     );
   }
 
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": product.name,
+    "image": images,
+    "description": product.description,
+    "sku": product.id,
+    "brand": {
+      "@type": "Brand",
+      "name": "FlyingPopat"
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": window.location.href,
+      "priceCurrency": "INR",
+      "price": product.price,
+      "priceValidUntil": "2025-12-31",
+      "itemCondition": "https://schema.org/NewCondition",
+      "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      "seller": {
+        "@type": "Organization",
+        "name": "FlyingPopat"
+      }
+    }
+  };
+
   const handleAddToCart = () => {
     if (product.stock > 0) {
        addToCart(product);
@@ -66,6 +93,7 @@ export const ProductDetails: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white py-12">
+      <Schema data={productSchema} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <button 
