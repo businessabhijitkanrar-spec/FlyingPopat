@@ -60,7 +60,7 @@ export interface User {
 }
 
 export type OrderStatus = 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled' | 'Return Requested' | 'Exchange Requested' | 'Returned' | 'Exchanged';
-export type RefundStatus = 'Pending' | 'Processed' | 'Failed';
+export type RefundStatus = 'Pending' | 'Processed' | 'Successful' | 'Failed';
 
 export interface ReturnRequest {
   type: 'Return' | 'Exchange';

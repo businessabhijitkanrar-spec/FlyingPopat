@@ -240,10 +240,12 @@ export const ProductDetails: React.FC = () => {
               {/* Increased height to accommodate full description */}
               <div className="min-h-[16rem] text-sm text-stone-600 leading-relaxed overflow-y-auto">
                  {activeTab === 'desc' && (
-                    <div className="prose prose-sm prose-stone">
-                      <p>{product.description}</p>
-                      <p className="mt-4">Woven with passion and precision, this saree represents the pinnacle of traditional craftsmanship.</p>
-                    </div>
+                    <div 
+                      className="prose prose-sm prose-stone max-w-none"
+                      dangerouslySetInnerHTML={{ 
+                        __html: product.description.replace(/\n/g, '<br />')
+                      }}
+                    />
                  )}
                  {activeTab === 'details' && (
                     <ul className="list-disc pl-4 space-y-2">

@@ -30,7 +30,10 @@ import {
   MinusCircle,
   TicketPercent,
   AlertTriangle,
-  RefreshCw
+  RefreshCw,
+  Bold,
+  Italic,
+  List
 } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
@@ -166,6 +169,30 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleTextFormat = (tag: string) => {
+    const textarea = document.getElementById('description-editor') as HTMLTextAreaElement;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = newProduct.description || '';
+    
+    // If no text is selected, just insert empty tags
+    const selection = text.substring(start, end);
+    let formattedSelection = '';
+
+    if (tag === 'b') formattedSelection = `<b>${selection}</b>`;
+    else if (tag === 'i') formattedSelection = `<i>${selection}</i>`;
+    else if (tag === 'ul') formattedSelection = `\n<ul>\n  <li>${selection}</li>\n</ul>\n`;
+
+    const newText = text.substring(0, start) + formattedSelection + text.substring(end);
+    
+    setNewProduct({ ...newProduct, description: newText });
+    
+    // Restore focus
+    textarea.focus();
+  };
+
   const handleDeleteClick = (id: string) => {
     setProductToDelete(id);
     setShowDeleteConfirm(true);
@@ -258,6 +285,10 @@ export const AdminDashboard: React.FC = () => {
     });
   };
 
+  const handleUpdateStock = (productId: string, change: number) => {
+    updateProductStock(productId, -change); // updateProductStock deducts, so we negate change to add/subtract properly
+  };
+
   const handleUpdateStatus = () => {
     if (selectedOrder) {
       updateOrderStatus(selectedOrder.id, newStatus, statusNote);
@@ -330,7 +361,7 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const orderStatuses: OrderStatus[] = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
-  const refundStatuses: RefundStatus[] = ['Pending', 'Processed', 'Failed'];
+  const refundStatuses: RefundStatus[] = ['Pending', 'Processed', 'Successful', 'Failed'];
 
   const SAREE_CATEGORIES = [
     ProductCategory.COTTON, ProductCategory.LINEN,
@@ -348,7 +379,7 @@ export const AdminDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-stone-50 flex flex-col md:flex-row">
-      {/* ... Sidebar and Main Layout ... */}
+      {/* ... Sidebar ... */}
       <aside className="w-full md:w-64 bg-white border-r border-stone-200 flex-shrink-0">
         <div className="p-6 border-b border-stone-100">
            <h2 className="font-serif text-xl font-bold text-stone-900">Admin Panel</h2>
@@ -360,7 +391,6 @@ export const AdminDashboard: React.FC = () => {
            </div>
         </div>
         <nav className="p-4 space-y-2">
-          {/* ... Navigation Buttons ... */}
           <button onClick={() => setActiveTab('orders')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'orders' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}><ShoppingBag size={20} /> Orders</button>
           <button onClick={() => setActiveTab('catalog')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'catalog' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}><Grid size={20} /> Catalog</button>
           <button onClick={() => setActiveTab('customers')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'customers' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}><Users size={20} /> Customers</button>
@@ -452,7 +482,7 @@ export const AdminDashboard: React.FC = () => {
                              </span>
                              {order.status === 'Cancelled' && (
                                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${
-                                    order.refundStatus === 'Processed' ? 'bg-green-50 text-green-700 border-green-200' :
+                                    order.refundStatus === 'Processed' || order.refundStatus === 'Successful' ? 'bg-green-50 text-green-700 border-green-200' :
                                     order.refundStatus === 'Failed' ? 'bg-red-50 text-red-700 border-red-200' :
                                     'bg-stone-100 text-stone-600 border-stone-200'
                                 }`}>
@@ -544,9 +574,9 @@ export const AdminDashboard: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 text-center">
                            <div className="flex items-center justify-center gap-1">
-                             <button onClick={() => updateProductStock(product.id, 1)} className="text-stone-400 hover:text-red-600 p-1 rounded-full hover:bg-red-50 disabled:opacity-30" disabled={product.stock <= 0} title="Decrease Stock"><MinusCircle size={16} /></button>
+                             <button onClick={() => handleUpdateStock(product.id, -1)} className="text-stone-400 hover:text-red-600 p-1 rounded-full hover:bg-red-50 disabled:opacity-30" disabled={product.stock <= 0} title="Decrease Stock"><MinusCircle size={16} /></button>
                              <span className={`min-w-[24px] text-center inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-bold ${product.stock === 0 ? 'bg-red-100 text-red-700' : product.stock < 5 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>{product.stock}</span>
-                             <button onClick={() => updateProductStock(product.id, -1)} className="text-stone-400 hover:text-green-600 p-1 rounded-full hover:bg-green-50" title="Increase Stock"><Plus size={16} /></button>
+                             <button onClick={() => handleUpdateStock(product.id, 1)} className="text-stone-400 hover:text-green-600 p-1 rounded-full hover:bg-green-50" title="Increase Stock"><Plus size={16} /></button>
                            </div>
                         </td>
                         <td className="px-6 py-4 text-right">
@@ -722,7 +752,7 @@ export const AdminDashboard: React.FC = () => {
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
            <div className="bg-white rounded-xl shadow-2xl w-[95%] md:w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-fade-in-down">
-              <div className="px-6 py-4 border-b border-stone-100 flex justify-between items-center bg-royal-900 text-white sticky top-0">
+              <div className="px-6 py-4 border-b border-stone-100 flex justify-between items-center bg-royal-900 text-white sticky top-0 z-10">
                   <h3 className="font-bold text-lg">{isEditing ? 'Edit Product' : 'Add New Product'}</h3>
                   <button onClick={handleModalClose} className="hover:bg-white/10 p-1 rounded transition-colors"><Plus className="rotate-45" size={20} /></button>
               </div>
@@ -804,7 +834,30 @@ export const AdminDashboard: React.FC = () => {
                    </div>
 
                    {/* Detailed Fields */}
-                   <div><label className="block text-sm font-medium text-stone-700 mb-1">Description</label><textarea value={newProduct.description} onChange={(e) => setNewProduct({...newProduct, description: e.target.value})} rows={3} className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none"></textarea></div>
+                   <div>
+                      <label className="block text-sm font-medium text-stone-700 mb-1">Description</label>
+                      <div className="border border-stone-300 rounded-lg overflow-hidden focus-within:ring-1 focus-within:ring-royal-500">
+                        <div className="bg-stone-50 border-b border-stone-200 px-3 py-2 flex gap-2">
+                          <button type="button" onClick={() => handleTextFormat('b')} className="p-1 hover:bg-stone-200 rounded text-stone-600" title="Bold">
+                            <Bold size={16} />
+                          </button>
+                          <button type="button" onClick={() => handleTextFormat('i')} className="p-1 hover:bg-stone-200 rounded text-stone-600" title="Italic">
+                            <Italic size={16} />
+                          </button>
+                          <button type="button" onClick={() => handleTextFormat('ul')} className="p-1 hover:bg-stone-200 rounded text-stone-600" title="List">
+                            <List size={16} />
+                          </button>
+                        </div>
+                        <textarea 
+                          id="description-editor"
+                          value={newProduct.description} 
+                          onChange={(e) => setNewProduct({...newProduct, description: e.target.value})} 
+                          rows={4} 
+                          className="w-full px-3 py-2 focus:outline-none border-none resize-y"
+                          placeholder="Use buttons above to format text..."
+                        ></textarea>
+                      </div>
+                   </div>
                    
                    <div className="grid md:grid-cols-2 gap-4">
                       <div><label className="block text-sm font-medium text-stone-700 mb-1">Fabric</label><input type="text" value={newProduct.fabric} onChange={(e) => setNewProduct({...newProduct, fabric: e.target.value})} className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none" /></div>
