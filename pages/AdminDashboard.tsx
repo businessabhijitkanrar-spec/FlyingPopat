@@ -29,7 +29,8 @@ import {
   RefreshCcw,
   MinusCircle,
   TicketPercent,
-  AlertTriangle
+  AlertTriangle,
+  RefreshCw
 } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
@@ -271,7 +272,8 @@ export const AdminDashboard: React.FC = () => {
   const handleUpdateRefundStatus = () => {
     if (selectedOrder) {
       updateRefundStatus(selectedOrder.id, newRefundStatus);
-      setSelectedOrder(null); // Close modal after update or keep open? Let's close for now.
+      alert("Refund status updated successfully!");
+      setSelectedOrder(null);
     }
   };
 
@@ -443,10 +445,21 @@ export const AdminDashboard: React.FC = () => {
                            {order.timestamp && <div className="text-xs text-stone-400">{new Date(order.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>}
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                            {getStatusIcon(order.status)}
-                            {order.status}
-                          </span>
+                           <div className="flex flex-col gap-1">
+                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                               {getStatusIcon(order.status)}
+                               {order.status}
+                             </span>
+                             {order.status === 'Cancelled' && (
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${
+                                    order.refundStatus === 'Processed' ? 'bg-green-50 text-green-700 border-green-200' :
+                                    order.refundStatus === 'Failed' ? 'bg-red-50 text-red-700 border-red-200' :
+                                    'bg-stone-100 text-stone-600 border-stone-200'
+                                }`}>
+                                    Refund: {order.refundStatus || 'Pending'}
+                                </span>
+                             )}
+                           </div>
                         </td>
                         <td className="px-6 py-4 font-bold text-stone-800">₹{order.total.toLocaleString('en-IN')}</td>
                         <td className="px-6 py-4 max-w-xs truncate" title={order.itemsSummary}>{order.itemsSummary}</td>
