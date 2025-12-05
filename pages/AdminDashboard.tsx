@@ -271,7 +271,7 @@ export const AdminDashboard: React.FC = () => {
   const handleUpdateRefundStatus = () => {
     if (selectedOrder) {
       updateRefundStatus(selectedOrder.id, newRefundStatus);
-      setSelectedOrder(null);
+      setSelectedOrder(null); // Close modal after update or keep open? Let's close for now.
     }
   };
 
@@ -889,6 +889,35 @@ export const AdminDashboard: React.FC = () => {
                         {selectedOrder.cancellationComment && (
                             <p className="text-sm text-red-700 mt-1"><span className="font-semibold">Comment:</span> {selectedOrder.cancellationComment}</p>
                         )}
+                    </div>
+                  </div>
+               )}
+
+               {/* Refund Management - Only for Cancelled Orders */}
+               {selectedOrder.status === 'Cancelled' && (
+                  <div className="bg-yellow-50 p-4 rounded-lg mb-6 border border-yellow-100">
+                    <h4 className="text-sm font-bold text-yellow-800 uppercase tracking-wide mb-3 flex items-center gap-2">
+                       <RefreshCcw size={16} /> Refund Management
+                    </h4>
+                    <div className="flex items-center gap-3">
+                       <div className="flex-1">
+                          <label className="text-xs font-bold text-yellow-700 mb-1 block">Current Refund Status</label>
+                          <select
+                            value={newRefundStatus}
+                            onChange={(e) => setNewRefundStatus(e.target.value as RefundStatus)}
+                            className="w-full px-3 py-2 border border-yellow-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-yellow-500 bg-white"
+                          >
+                            {refundStatuses.map(status => <option key={status} value={status}>{status}</option>)}
+                          </select>
+                       </div>
+                       <div className="self-end">
+                          <button
+                            onClick={handleUpdateRefundStatus}
+                            className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors shadow-sm text-sm font-bold"
+                          >
+                            Update Refund
+                          </button>
+                       </div>
                     </div>
                   </div>
                )}
