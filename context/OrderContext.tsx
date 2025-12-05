@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Order, OrderStatus, RefundStatus, ReturnRequest } from '../types';
 import { db, isFirebaseConfigured } from '../firebase-config';
@@ -20,12 +21,25 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   // Real-time listener
   useEffect(() => {
     if (isFirebaseConfigured && db) {
+      // We still query by date DESC from Firestore
       const q = query(collection(db, "orders"), orderBy("date", "desc"));
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const ordersList: Order[] = [];
         querySnapshot.forEach((doc) => {
           ordersList.push(doc.data() as Order);
         });
+        
+        // Enhance sorting client-side to use timestamp for precision
+        // This handles cases where multiple orders are placed on the same day
+        ordersList.sort((a, b) => {
+            const tA = a.timestamp || a.date;
+            const tB = b.timestamp || b.date;
+            // Descending order (Newest first)
+            if (tA < tB) return 1;
+            if (tA > tB) return -1;
+            return 0;
+        });
+
         setOrders(ordersList);
       }, (error) => {
          console.error("Error fetching orders:", error);

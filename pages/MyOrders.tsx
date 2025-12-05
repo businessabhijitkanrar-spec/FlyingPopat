@@ -150,7 +150,15 @@ export const MyOrders: React.FC = () => {
   return (
     <div className="min-h-screen bg-stone-50 py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="font-serif text-3xl font-bold text-stone-900 mb-8">My Orders</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="font-serif text-3xl font-bold text-stone-900">My Orders</h1>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="flex items-center gap-2 px-3 py-2 bg-white border border-stone-200 rounded-lg text-stone-600 hover:bg-stone-50 text-sm font-medium"
+          >
+            <RefreshCcw size={16} /> Refresh Orders
+          </button>
+        </div>
 
         {myOrders.length === 0 ? (
           <div className="bg-white p-12 rounded-xl shadow-sm text-center">
@@ -176,7 +184,10 @@ export const MyOrders: React.FC = () => {
                             {order.status}
                           </span>
                         </div>
-                        <p className="text-sm text-stone-500">Ordered on {order.date}</p>
+                        <p className="text-sm text-stone-500">
+                           Ordered on {order.date}
+                           {order.timestamp && <span> at {new Date(order.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>}
+                        </p>
                       </div>
                       
                       <div className="flex items-center gap-4">
@@ -248,12 +259,15 @@ export const MyOrders: React.FC = () => {
                       )}
                       
                       {/* Return / Exchange Button */}
-                      {isReturnEligible(order) && !order.status.includes('Return') && !order.status.includes('Exchange') && (
+                      {!order.status.includes('Return') && !order.status.includes('Exchange') && (
                         <button 
                           onClick={() => setReturningOrder(order)}
-                          className="flex items-center gap-2 px-4 py-2 border border-stone-300 text-stone-700 bg-white rounded-lg text-sm font-medium hover:bg-stone-50 transition-colors"
+                          disabled={order.status !== 'Delivered' || !isReturnEligible(order)}
+                          className="flex items-center gap-2 px-4 py-2 border border-stone-300 text-stone-700 bg-white rounded-lg text-sm font-medium hover:bg-stone-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <ArrowLeftRight size={16} /> Return / Exchange
+                          <ArrowLeftRight size={16} /> 
+                          {order.status !== 'Delivered' ? 'Return available after delivery' : 
+                           !isReturnEligible(order) ? 'Return window closed' : 'Return / Exchange'}
                         </button>
                       )}
 

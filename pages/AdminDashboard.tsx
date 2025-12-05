@@ -359,7 +359,7 @@ export const AdminDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-stone-50 flex flex-col md:flex-row">
-      {/* ... Sidebar and Main Layout (No change) ... */}
+      {/* ... Sidebar and Main Layout ... */}
       <aside className="w-full md:w-64 bg-white border-r border-stone-200 flex-shrink-0">
         <div className="p-6 border-b border-stone-100">
            <h2 className="font-serif text-xl font-bold text-stone-900">Admin Panel</h2>
@@ -421,6 +421,12 @@ export const AdminDashboard: React.FC = () => {
                   className="pl-10 pr-4 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-royal-500 w-full bg-white"
                 />
               </div>
+              <button 
+                onClick={() => window.location.reload()}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-stone-200 rounded-lg text-stone-600 hover:bg-stone-50 font-medium"
+              >
+                <RefreshCcw size={18} /> Refresh List
+              </button>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden">
@@ -430,7 +436,7 @@ export const AdminDashboard: React.FC = () => {
                     <tr>
                       <th className="px-6 py-4">Order ID</th>
                       <th className="px-6 py-4">Customer</th>
-                      <th className="px-6 py-4">Date</th>
+                      <th className="px-6 py-4">Date & Time</th>
                       <th className="px-6 py-4">Status</th>
                       <th className="px-6 py-4">Total</th>
                       <th className="px-6 py-4">Items</th>
@@ -449,7 +455,10 @@ export const AdminDashboard: React.FC = () => {
                           <div className="font-medium text-stone-900">{order.customerName}</div>
                           <div className="text-xs text-stone-400">{order.email}</div>
                         </td>
-                        <td className="px-6 py-4">{order.date}</td>
+                        <td className="px-6 py-4">
+                           <div>{order.date}</div>
+                           {order.timestamp && <div className="text-xs text-stone-400">{new Date(order.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>}
+                        </td>
                         <td className="px-6 py-4">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                             {getStatusIcon(order.status)}
@@ -471,10 +480,10 @@ export const AdminDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* CATALOG TAB (Restored "Restore Default Catalog" button) */}
+        {/* CATALOG TAB */}
         {activeTab === 'catalog' && (
           <div className="space-y-6">
-            {/* Stats (No Change) */}
+            {/* Stats */}
              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                <div className="bg-white p-6 rounded-xl shadow-sm border border-stone-100 flex items-center gap-4">
                 <div className="p-3 bg-blue-50 text-blue-600 rounded-lg"><Package size={24} /></div>
@@ -559,31 +568,142 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
         )}
+        
+        {/* Placeholder for other tabs (Customers, etc.) */}
+        {(activeTab === 'customers' || activeTab === 'feedback' || activeTab === 'inquiries' || activeTab === 'coupons') && (
+            <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-8 text-center text-stone-500">
+                Content for {activeTab} goes here.
+            </div>
+        )}
 
-        {/* ... CUSTOMERS, FEEDBACK, INQUIRIES, COUPONS TABS (Unchanged) ... */}
-        {/* Simplified render for brevity, assuming existing tab content remains similar to previous version */}
-        {activeTab === 'customers' && (
-             /* ... existing customers tab ... */
-             <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-8 text-center text-stone-500">Customer Management content</div>
-        )}
-        {activeTab === 'feedback' && (
-             /* ... existing feedback tab ... */
-              <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-8 text-center text-stone-500">Feedback content</div>
-        )}
-        {activeTab === 'inquiries' && (
-              /* ... existing inquiries tab ... */
-               <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-8 text-center text-stone-500">Inquiry content</div>
-        )}
-        {activeTab === 'coupons' && (
-              /* ... existing coupons tab ... */
-               <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-8 text-center text-stone-500">Coupon content</div>
-        )}
       </main>
 
-      {/* ... ADD/EDIT MODAL (Unchanged) ... */}
-      {/* ... DELETE CONFIRM MODAL (Unchanged) ... */}
+      {/* ... MODALS (Add/Edit, Delete, Order Details) ... */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+           <div className="bg-white rounded-xl shadow-2xl w-[95%] md:w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-fade-in-down">
+              <div className="px-6 py-4 border-b border-stone-100 flex justify-between items-center bg-royal-900 text-white sticky top-0">
+                  <h3 className="font-bold text-lg">{isEditing ? 'Edit Product' : 'Add New Product'}</h3>
+                  <button onClick={handleModalClose} className="hover:bg-white/10 p-1 rounded transition-colors"><Plus className="rotate-45" size={20} /></button>
+              </div>
+              <div className="p-6">
+                <form onSubmit={handleSaveProduct} className="space-y-6">
+                   {/* Product Name & Pricing */}
+                   <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-stone-700 mb-1">Product Name</label>
+                        <input type="text" required value={newProduct.name} onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                         <div>
+                            <label className="block text-sm font-medium text-stone-700 mb-1">Selling Price</label>
+                            <input type="number" required min="0" value={newProduct.price} onChange={(e) => setNewProduct({...newProduct, price: Number(e.target.value)})} className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none" />
+                         </div>
+                         <div>
+                            <label className="block text-sm font-medium text-stone-700 mb-1">MRP</label>
+                            <input type="number" min="0" value={newProduct.mrp} onChange={(e) => setNewProduct({...newProduct, mrp: Number(e.target.value)})} className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none" />
+                         </div>
+                      </div>
+                   </div>
+                   
+                   {/* Section, Category & Stock */}
+                   <div className="grid md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-stone-700 mb-1">Section</label>
+                        <select value={newProduct.section} onChange={(e) => setNewProduct({...newProduct, section: e.target.value as 'Saree' | 'Kids', category: e.target.value === 'Kids' ? KIDS_CATEGORIES[0] : SAREE_CATEGORIES[0]})} className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none">
+                            <option value="Saree">Saree</option>
+                            <option value="Kids">Kids</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-stone-700 mb-1">Category</label>
+                        <select value={newProduct.category} onChange={(e) => setNewProduct({...newProduct, category: e.target.value})} className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none">
+                            {currentCategoryOptions.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-stone-700 mb-1">Stock</label>
+                        <input type="number" required min="0" value={newProduct.stock} onChange={(e) => setNewProduct({...newProduct, stock: Number(e.target.value)})} className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none" />
+                      </div>
+                   </div>
+
+                   {/* Tags */}
+                   <div>
+                      <label className="block text-sm font-medium text-stone-700 mb-2">Tags</label>
+                      <div className="flex gap-2">
+                         {AVAILABLE_TAGS.map(tag => (
+                             <button type="button" key={tag} onClick={() => toggleTag(tag)} className={`px-3 py-1.5 rounded-full text-xs font-bold border ${newProduct.tags?.includes(tag) ? 'bg-gold-500 text-white border-gold-500' : 'bg-white text-stone-600 border-stone-300'}`}>
+                                 {tag}
+                             </button>
+                         ))}
+                      </div>
+                   </div>
+
+                   {/* Images */}
+                   <div>
+                       <label className="block text-sm font-medium text-stone-700 mb-2">Product Images (Max 3)</label>
+                       <div className="space-y-3">
+                           {productImages.map((img, idx) => (
+                               <div key={idx} className="flex gap-2">
+                                  <input type="text" value={img} onChange={(e) => handleImageUrlChange(e.target.value, idx)} placeholder="Image URL (Google Drive supported)" className="flex-1 border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-royal-500 focus:outline-none" />
+                                  <div className="relative">
+                                    <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, idx)} className="absolute inset-0 w-full opacity-0 cursor-pointer" />
+                                    <button type="button" className="px-3 py-2 bg-stone-100 hover:bg-stone-200 rounded-lg border border-stone-200"><ImageIcon size={18}/></button>
+                                  </div>
+                                  {productImages.length > 1 && <button type="button" onClick={() => removeImageSlot(idx)} className="text-red-500 hover:text-red-700"><Trash2 size={18}/></button>}
+                               </div>
+                           ))}
+                           {productImages.length < 3 && <button type="button" onClick={addImageSlot} className="text-sm text-royal-700 font-medium hover:underline">+ Add Another Image</button>}
+                       </div>
+                       {/* Preview */}
+                       <div className="flex gap-2 mt-2">
+                           {productImages.filter(i => i).map((img, idx) => (
+                               <img key={idx} src={img} alt="Preview" className="w-16 h-16 object-cover rounded border border-stone-200" />
+                           ))}
+                       </div>
+                   </div>
+
+                   {/* Detailed Fields */}
+                   <div><label className="block text-sm font-medium text-stone-700 mb-1">Description</label><textarea value={newProduct.description} onChange={(e) => setNewProduct({...newProduct, description: e.target.value})} rows={3} className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none"></textarea></div>
+                   
+                   <div className="grid md:grid-cols-2 gap-4">
+                      <div><label className="block text-sm font-medium text-stone-700 mb-1">Fabric</label><input type="text" value={newProduct.fabric} onChange={(e) => setNewProduct({...newProduct, fabric: e.target.value})} className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none" /></div>
+                      <div><label className="block text-sm font-medium text-stone-700 mb-1">Colors (comma separated)</label><input type="text" value={colorsInput} onChange={(e) => setColorsInput(e.target.value)} className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none" placeholder="Red, Blue, Gold" /></div>
+                   </div>
+                   
+                   <div><label className="block text-sm font-medium text-stone-700 mb-1">Occasion (comma separated)</label><input type="text" value={occasionInput} onChange={(e) => setOccasionInput(e.target.value)} className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none" placeholder="Wedding, Party, Casual" /></div>
+                   
+                   <div className="grid md:grid-cols-2 gap-4">
+                      <div><label className="block text-sm font-medium text-stone-700 mb-1">Product Details (newline separated)</label><textarea value={detailsInput} onChange={(e) => setDetailsInput(e.target.value)} rows={3} className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none" placeholder="Length: 6.3m&#10;Blouse: Included"></textarea></div>
+                      <div><label className="block text-sm font-medium text-stone-700 mb-1">Care Instructions (newline separated)</label><textarea value={careInput} onChange={(e) => setCareInput(e.target.value)} rows={3} className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none" placeholder="Dry clean only&#10;Iron low heat"></textarea></div>
+                   </div>
+
+                   <div className="flex justify-end gap-3 pt-4 border-t border-stone-100">
+                      <button type="button" onClick={handleModalClose} className="px-6 py-2 border border-stone-300 rounded-lg text-stone-600 hover:bg-stone-50">Cancel</button>
+                      <button type="submit" className="px-6 py-2 bg-royal-700 text-white rounded-lg hover:bg-royal-800">{isEditing ? 'Update Product' : 'Add Product'}</button>
+                   </div>
+                </form>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 text-center animate-fade-in-down">
+             <AlertTriangle size={48} className="text-red-500 mx-auto mb-4" />
+             <h3 className="text-xl font-bold text-stone-900 mb-2">Delete Product?</h3>
+             <p className="text-stone-600 mb-6">Are you sure you want to remove this item from the catalog? This action cannot be undone.</p>
+             <div className="flex gap-3">
+                <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-2 border border-stone-300 rounded-lg text-stone-600 hover:bg-stone-50">Cancel</button>
+                <button onClick={confirmDelete} className="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-bold">Delete</button>
+             </div>
+          </div>
+        </div>
+      )}
       
-      {/* Order Details Modal (Updated with Payment Screenshot) */}
+      {/* Order Details Modal */}
       {selectedOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl shadow-2xl w-[95%] md:w-full max-w-2xl overflow-hidden animate-fade-in-down max-h-[90vh] overflow-y-auto">
@@ -594,7 +714,7 @@ export const AdminDashboard: React.FC = () => {
             
             <div className="p-6">
                <div className="grid md:grid-cols-2 gap-8 mb-6">
-                  {/* ... Customer and Address (Unchanged) ... */}
+                  {/* ... Customer and Address ... */}
                   <div>
                     <h4 className="text-sm font-bold text-stone-900 uppercase tracking-wide mb-3 flex items-center gap-2"><Users size={16} className="text-royal-700" /> Customer Info</h4>
                     <div className="space-y-2 text-sm text-stone-600 bg-stone-50 p-4 rounded-lg">
@@ -631,7 +751,7 @@ export const AdminDashboard: React.FC = () => {
                   </div>
                )}
 
-               {/* ... Summary and Status Update (Unchanged) ... */}
+               {/* ... Summary and Status Update ... */}
                <div className="pt-4 border-t border-stone-100">
                  <h4 className="text-sm font-bold text-stone-900 uppercase tracking-wide mb-3">Update Status</h4>
                  <div className="space-y-4">

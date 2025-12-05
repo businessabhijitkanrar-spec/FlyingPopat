@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
@@ -78,6 +79,7 @@ export const PaymentVerification: React.FC = () => {
         city: shippingData.city,
         zip: shippingData.zip,
         date: new Date().toISOString().split('T')[0],
+        timestamp: new Date().toISOString(), // Add exact timestamp for sorting
         status: 'Pending' as OrderStatus,
         total: finalTotal,
         subtotal: cartSubtotal,

@@ -79,6 +79,7 @@ export interface Order {
   city: string;
   zip: string;
   date: string;
+  timestamp?: string; // ISO String for precise sorting and time display
   deliveryDate?: string; // Added to track 3-day return policy
   status: OrderStatus;
   statusNote?: string; // Added for admin notes
