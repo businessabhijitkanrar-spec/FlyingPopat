@@ -6,10 +6,10 @@ import { collection, updateDoc, doc, onSnapshot, query, orderBy, setDoc } from '
 
 interface OrderContextType {
   orders: Order[];
-  addOrder: (order: Order) => Promise<void>; // Updated signature to Promise
+  addOrder: (order: Order) => Promise<void>;
   updateOrderStatus: (orderId: string, status: OrderStatus, note?: string) => void;
   updateRefundStatus: (orderId: string, status: RefundStatus) => void;
-  cancelOrder: (orderId: string) => void;
+  cancelOrder: (orderId: string, reason?: string, comment?: string) => void;
   requestReturn: (orderId: string, request: ReturnRequest) => void;
 }
 
@@ -113,8 +113,14 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
-  const cancelOrder = async (orderId: string) => {
-    const updates = { status: 'Cancelled' as OrderStatus, refundStatus: 'Pending' as RefundStatus };
+  const cancelOrder = async (orderId: string, reason?: string, comment?: string) => {
+    const updates: any = { 
+        status: 'Cancelled' as OrderStatus, 
+        refundStatus: 'Pending' as RefundStatus 
+    };
+    
+    if (reason) updates.cancellationReason = reason;
+    if (comment) updates.cancellationComment = comment;
     
     if (isFirebaseConfigured && db) {
       try {

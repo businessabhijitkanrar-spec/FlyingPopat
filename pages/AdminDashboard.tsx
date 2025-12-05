@@ -878,6 +878,21 @@ export const AdminDashboard: React.FC = () => {
                   </div>
                )}
 
+               {/* Cancellation Reason Section */}
+               {selectedOrder.status === 'Cancelled' && (
+                  <div className="bg-red-50 p-4 rounded-lg mb-6 border border-red-100">
+                    <h4 className="text-sm font-bold text-red-800 uppercase tracking-wide mb-2 flex items-center gap-2">
+                        <AlertTriangle size={16} /> Cancellation Details
+                    </h4>
+                    <div className="space-y-1">
+                        <p className="text-sm text-red-700"><span className="font-semibold">Reason:</span> {selectedOrder.cancellationReason || 'N/A'}</p>
+                        {selectedOrder.cancellationComment && (
+                            <p className="text-sm text-red-700 mt-1"><span className="font-semibold">Comment:</span> {selectedOrder.cancellationComment}</p>
+                        )}
+                    </div>
+                  </div>
+               )}
+
                {/* ... Summary and Status Update ... */}
                <div className="pt-4 border-t border-stone-100">
                  <h4 className="text-sm font-bold text-stone-900 uppercase tracking-wide mb-3">Update Status</h4>

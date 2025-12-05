@@ -85,6 +85,8 @@ export interface Order {
   statusNote?: string; // Added for admin notes
   refundStatus?: RefundStatus;
   returnRequest?: ReturnRequest; // Store return details
+  cancellationReason?: string; // Store why user cancelled
+  cancellationComment?: string; // Store additional cancel comments
   total: number; // Final payable amount
   subtotal?: number;
   discount?: number;

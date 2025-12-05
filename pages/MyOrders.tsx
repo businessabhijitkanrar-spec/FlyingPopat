@@ -44,8 +44,8 @@ export const MyOrders: React.FC = () => {
   const handleCancelSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (cancellingOrder && cancellationReason) {
-      cancelOrder(cancellingOrder.id);
-      // Removed feedback submission logic
+      cancelOrder(cancellingOrder.id, cancellationReason, cancellationComment);
+      
       setCancellingOrder(null);
       setCancellationReason('');
       setCancellationComment('');
