@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
@@ -63,6 +62,7 @@ export const PaymentVerification: React.FC = () => {
     }
 
     setIsSubmitting(true);
+    setError('');
 
     try {
       // Create Items Summary String
@@ -82,7 +82,8 @@ export const PaymentVerification: React.FC = () => {
         total: finalTotal,
         subtotal: cartSubtotal,
         discount: discountAmount,
-        couponCode: appliedCoupon?.code,
+        // FIX: Firebase crashes if this is undefined. Must be string or null.
+        couponCode: appliedCoupon?.code || null,
         itemsSummary: itemsSummary,
         paymentMethod: 'online' as const,
         paymentScreenshot: screenshot // Save the screenshot
@@ -97,9 +98,9 @@ export const PaymentVerification: React.FC = () => {
 
       clearCart();
       setIsSuccess(true);
-    } catch (err) {
-      console.error(err);
-      setError("Failed to place order. Please try again.");
+    } catch (err: any) {
+      console.error("Order placement failed:", err);
+      setError(err.message || "Failed to place order. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

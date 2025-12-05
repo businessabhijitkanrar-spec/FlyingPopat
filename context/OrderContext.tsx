@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Order, OrderStatus, RefundStatus, ReturnRequest } from '../types';
 import { db, isFirebaseConfigured } from '../firebase-config';
@@ -6,7 +5,7 @@ import { collection, updateDoc, doc, onSnapshot, query, orderBy, setDoc } from '
 
 interface OrderContextType {
   orders: Order[];
-  addOrder: (order: Order) => void;
+  addOrder: (order: Order) => Promise<void>; // Updated signature to Promise
   updateOrderStatus: (orderId: string, status: OrderStatus, note?: string) => void;
   updateRefundStatus: (orderId: string, status: RefundStatus) => void;
   cancelOrder: (orderId: string) => void;
@@ -43,11 +42,9 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const addOrder = async (order: Order) => {
     if (isFirebaseConfigured && db) {
-      try {
+        // We do NOT use try/catch here intentionally. 
+        // We want the error to propagate to the PaymentVerification component so it can show the error to the user.
         await setDoc(doc(db, "orders", order.id), order);
-      } catch (e) {
-        console.error("Error adding order: ", e);
-      }
     } else {
       // Mock Mode
       setOrders(prev => {
