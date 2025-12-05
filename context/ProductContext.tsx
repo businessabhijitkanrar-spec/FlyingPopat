@@ -35,7 +35,8 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
           productsList.push(doc.data() as Product);
         });
         
-        if (productsList.length === 0 && !localStorage.getItem('products_seeded')) {
+        // Auto-seed only if DB is empty and we haven't tried seeding yet
+        if (productsList.length === 0 && !localStorage.getItem('flyingpopat_products_seeded')) {
           seedProducts();
         } else {
           setProducts(productsList);
@@ -44,22 +45,25 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
       return () => unsubscribe();
     } else {
       // Mock / Local Storage
-      const savedProducts = localStorage.getItem('vastra_products');
+      // Changed key to 'flyingpopat_products' to ensure old 'vastra_products' are ignored
+      const savedProducts = localStorage.getItem('flyingpopat_products');
       if (savedProducts) {
         setProducts(JSON.parse(savedProducts));
       } else {
         setProducts(INITIAL_PRODUCTS);
-        localStorage.setItem('vastra_products', JSON.stringify(INITIAL_PRODUCTS));
+        localStorage.setItem('flyingpopat_products', JSON.stringify(INITIAL_PRODUCTS));
       }
     }
   }, []);
 
   const seedProducts = async () => {
     try {
-      localStorage.setItem('products_seeded', 'true');
-      console.log("Seeding Database with Initial Products...");
-      for (const product of INITIAL_PRODUCTS) {
-        await setDoc(doc(db, "products", product.id), product);
+      localStorage.setItem('flyingpopat_products_seeded', 'true');
+      if (INITIAL_PRODUCTS.length > 0) {
+        console.log("Seeding Database with Initial Products...");
+        for (const product of INITIAL_PRODUCTS) {
+          await setDoc(doc(db, "products", product.id), product);
+        }
       }
     } catch (error) {
       console.error("Error seeding products:", error);
@@ -77,7 +81,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
       // Local Mock
       setProducts(prev => {
         const updated = [...prev, product];
-        localStorage.setItem('vastra_products', JSON.stringify(updated));
+        localStorage.setItem('flyingpopat_products', JSON.stringify(updated));
         return updated;
       });
     }
@@ -94,7 +98,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
       // Local Mock
       setProducts(prev => {
         const updated = prev.map(p => p.id === product.id ? product : p);
-        localStorage.setItem('vastra_products', JSON.stringify(updated));
+        localStorage.setItem('flyingpopat_products', JSON.stringify(updated));
         return updated;
       });
     }
@@ -111,7 +115,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
       // Local Mock
       setProducts(prev => {
         const updated = prev.filter(p => p.id !== productId);
-        localStorage.setItem('vastra_products', JSON.stringify(updated));
+        localStorage.setItem('flyingpopat_products', JSON.stringify(updated));
         return updated;
       });
     }
@@ -136,7 +140,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
           }
           return p;
         });
-        localStorage.setItem('vastra_products', JSON.stringify(updated));
+        localStorage.setItem('flyingpopat_products', JSON.stringify(updated));
         return updated;
       });
     }
