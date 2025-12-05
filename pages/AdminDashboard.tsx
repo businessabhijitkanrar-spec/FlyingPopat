@@ -531,9 +531,6 @@ export const AdminDashboard: React.FC = () => {
                 <input type="text" placeholder="Search products..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 pr-4 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-royal-500 w-full bg-white"/>
               </div>
               <div className="flex gap-2 w-full sm:w-auto">
-                 <button onClick={restoreDefaults} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-stone-200 text-stone-700 px-5 py-2.5 rounded-lg hover:bg-stone-300 transition-colors font-medium">
-                     <RefreshCcw size={18} /> Restore Defaults
-                 </button>
                  <button onClick={() => { setShowAddModal(true); setIsEditing(false); resetForm(); }} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-royal-700 text-white px-5 py-2.5 rounded-lg hover:bg-royal-800 transition-colors shadow-md font-medium">
                     <Plus size={18} /> Add New Item
                  </button>
