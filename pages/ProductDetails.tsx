@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext';
 import { useAuth } from '../context/AuthContext';
-import { ShoppingBag, ArrowLeft, Truck, ShieldCheck, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, Truck, ShieldCheck, RefreshCw, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
 
 export const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -37,7 +37,9 @@ export const ProductDetails: React.FC = () => {
   }
 
   const handleAddToCart = () => {
-    addToCart(product);
+    if (product.stock > 0) {
+       addToCart(product);
+    }
   };
 
   const handlePrevImage = (e: React.MouseEvent) => {
@@ -59,6 +61,9 @@ export const ProductDetails: React.FC = () => {
     ? Math.round(((product.mrp - product.price) / product.mrp) * 100) 
     : 0;
 
+  const isOutOfStock = product.stock === 0;
+  const isLowStock = product.stock > 0 && product.stock < 5;
+
   return (
     <div className="min-h-screen bg-white py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -78,9 +83,17 @@ export const ProductDetails: React.FC = () => {
               <img 
                 src={selectedImage} 
                 alt={product.name} 
-                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                className={`w-full h-full object-cover transition-transform duration-700 hover:scale-105 ${isOutOfStock ? 'grayscale opacity-70' : ''}`}
               />
               
+              {isOutOfStock && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                     <span className="bg-red-600 text-white px-6 py-2 rounded-full font-bold text-xl uppercase tracking-widest shadow-lg transform -rotate-12 border-2 border-white">
+                        Out of Stock
+                     </span>
+                  </div>
+              )}
+
               {/* Navigation Arrows */}
               {images.length > 1 && (
                 <>
@@ -157,6 +170,23 @@ export const ProductDetails: React.FC = () => {
                 )}
               </div>
 
+              {/* Stock Status */}
+              <div className="mb-6">
+                 {isOutOfStock ? (
+                   <span className="inline-flex items-center gap-2 text-red-600 font-bold bg-red-50 px-3 py-1 rounded-full text-sm">
+                      <AlertTriangle size={16} /> Currently Unavailable
+                   </span>
+                 ) : isLowStock ? (
+                    <span className="inline-flex items-center gap-2 text-orange-600 font-bold bg-orange-50 px-3 py-1 rounded-full text-sm animate-pulse">
+                      <AlertTriangle size={16} /> Hurry! Only {product.stock} left
+                   </span>
+                 ) : (
+                    <span className="inline-flex items-center gap-2 text-green-600 font-medium text-sm">
+                       <ShieldCheck size={16} /> In Stock
+                    </span>
+                 )}
+              </div>
+
               {/* Color Selection (Simulated) */}
               <div className="mb-8">
                 <h3 className="text-sm font-semibold mb-3">Available Colors</h3>
@@ -179,9 +209,13 @@ export const ProductDetails: React.FC = () => {
                 <div className="flex gap-4 mb-10">
                   <button 
                     onClick={handleAddToCart}
-                    className="flex-1 bg-royal-700 text-white py-4 px-8 rounded-full font-bold hover:bg-royal-800 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                    disabled={isOutOfStock}
+                    className={`flex-1 text-white py-4 px-8 rounded-full font-bold transition-all shadow-lg flex items-center justify-center gap-2 
+                      ${isOutOfStock 
+                        ? 'bg-stone-300 cursor-not-allowed shadow-none' 
+                        : 'bg-royal-700 hover:bg-royal-800 hover:shadow-xl'}`}
                   >
-                    <ShoppingBag size={20} /> Add to Cart
+                    <ShoppingBag size={20} /> {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
                   </button>
                   <button className="p-4 border border-stone-300 rounded-full hover:bg-stone-50 transition-colors">
                     <svg className="w-6 h-6 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>

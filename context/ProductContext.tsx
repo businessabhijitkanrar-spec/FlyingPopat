@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Product } from '../types';
 import { PRODUCTS as INITIAL_PRODUCTS } from '../constants';
@@ -8,7 +9,8 @@ import {
   deleteDoc, 
   doc, 
   setDoc,
-  updateDoc
+  updateDoc,
+  increment
 } from 'firebase/firestore';
 
 interface ProductContextType {
@@ -16,6 +18,7 @@ interface ProductContextType {
   addProduct: (product: Product) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (productId: string) => void;
+  updateProductStock: (productId: string, quantityToDeduct: number) => Promise<void>;
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
@@ -114,8 +117,33 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
+  const updateProductStock = async (productId: string, quantityToDeduct: number) => {
+    if (isFirebaseConfigured && db) {
+      try {
+        const productRef = doc(db, "products", productId);
+        await updateDoc(productRef, {
+          stock: increment(-quantityToDeduct)
+        });
+      } catch (error) {
+        console.error("Error updating stock:", error);
+      }
+    } else {
+      // Local Mock
+      setProducts(prev => {
+        const updated = prev.map(p => {
+          if (p.id === productId) {
+            return { ...p, stock: Math.max(0, p.stock - quantityToDeduct) };
+          }
+          return p;
+        });
+        localStorage.setItem('vastra_products', JSON.stringify(updated));
+        return updated;
+      });
+    }
+  };
+
   return (
-    <ProductContext.Provider value={{ products, addProduct, updateProduct, deleteProduct }}>
+    <ProductContext.Provider value={{ products, addProduct, updateProduct, deleteProduct, updateProductStock }}>
       {children}
     </ProductContext.Provider>
   );

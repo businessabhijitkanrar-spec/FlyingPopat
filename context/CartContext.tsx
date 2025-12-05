@@ -26,11 +26,22 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setCart((prev) => {
       const existing = prev.find((item) => item.id === product.id);
       if (existing) {
+        // Check Stock Limit
+        if (existing.quantity >= product.stock) {
+           alert(`Sorry, only ${product.stock} items in stock.`);
+           return prev;
+        }
         return prev.map((item) =>
           item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      return [...prev, { ...product, quantity: 1 }];
+      
+      if (product.stock > 0) {
+         return [...prev, { ...product, quantity: 1 }];
+      } else {
+         alert("Product is out of stock.");
+         return prev;
+      }
     });
   };
 
@@ -40,8 +51,19 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const updateQuantity = (productId: string, quantity: number) => {
     if (quantity < 1) return;
+    
     setCart((prev) =>
-      prev.map((item) => (item.id === productId ? { ...item, quantity } : item))
+      prev.map((item) => {
+        if (item.id === productId) {
+           // Check stock limit
+           if (quantity > item.stock) {
+              alert(`Sorry, only ${item.stock} items available.`);
+              return item;
+           }
+           return { ...item, quantity };
+        }
+        return item;
+      })
     );
   };
 

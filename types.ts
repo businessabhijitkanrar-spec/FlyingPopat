@@ -5,6 +5,7 @@ export interface Product {
   description: string;
   price: number; // Selling Price
   mrp?: number;  // Maximum Retail Price
+  stock: number; // Inventory Count
   section: 'Saree' | 'Kids'; // New field to separate catalog pages
   category: string; // Changed from enum to string to allow flexibility, but we will still use the enum for dropdowns
   image: string; // Main image for backward compatibility

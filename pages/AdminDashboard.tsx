@@ -38,7 +38,8 @@ import {
   Tag,
   Inbox,
   TicketPercent,
-  FileText
+  FileText,
+  AlertTriangle
 } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
@@ -74,6 +75,7 @@ export const AdminDashboard: React.FC = () => {
     name: '',
     price: 0,
     mrp: 0,
+    stock: 0, // Stock default
     section: 'Saree', // Default section
     category: ProductCategory.COTTON,
     description: '',
@@ -106,6 +108,7 @@ export const AdminDashboard: React.FC = () => {
       name: '',
       price: 0,
       mrp: 0,
+      stock: 0,
       section: 'Saree',
       category: ProductCategory.COTTON,
       description: '',
@@ -142,6 +145,7 @@ export const AdminDashboard: React.FC = () => {
         ...newProduct as Product,
         price: finalPrice,
         mrp: finalMrp,
+        stock: Number(newProduct.stock) || 0,
         id: isEditing && editingProductId ? editingProductId : Date.now().toString(),
         image: mainImage,
         images: validImages,
@@ -329,6 +333,9 @@ export const AdminDashboard: React.FC = () => {
 
   const currentCategoryOptions = newProduct.section === 'Kids' ? KIDS_CATEGORIES : SAREE_CATEGORIES;
 
+  // Stock stats
+  const lowStockCount = products.filter(p => p.stock < 5).length;
+
   return (
     <div className="min-h-screen bg-stone-50 flex flex-col md:flex-row">
       
@@ -397,8 +404,8 @@ export const AdminDashboard: React.FC = () => {
                <p className="text-lg font-bold text-stone-900">₹{orders.filter(o => o.status !== 'Cancelled').reduce((sum, o) => sum + o.total, 0).toLocaleString('en-IN')}</p>
              </div>
              <div>
-               <p className="text-xs text-stone-500 uppercase tracking-wide font-bold">Registered Users</p>
-               <p className="text-lg font-bold text-royal-600">{allUsers.filter(u => u.role === 'user').length}</p>
+               <p className="text-xs text-stone-500 uppercase tracking-wide font-bold">Low Stock Items</p>
+               <p className={`text-lg font-bold ${lowStockCount > 0 ? 'text-red-600' : 'text-green-600'}`}>{lowStockCount}</p>
              </div>
           </div>
         </div>
@@ -785,8 +792,8 @@ export const AdminDashboard: React.FC = () => {
                   <Users size={24} />
                 </div>
                 <div>
-                  <p className="text-sm text-stone-500 font-medium">Low Stock</p>
-                  <h3 className="text-2xl font-bold text-stone-900">3 Items</h3>
+                  <p className="text-sm text-stone-500 font-medium">Low Stock Items</p>
+                  <h3 className={`text-2xl font-bold ${lowStockCount > 0 ? 'text-red-600' : 'text-stone-900'}`}>{lowStockCount}</h3>
                 </div>
               </div>
             </div>
@@ -821,6 +828,7 @@ export const AdminDashboard: React.FC = () => {
                       <th className="px-6 py-4">Section</th>
                       <th className="px-6 py-4">Category</th>
                       <th className="px-6 py-4">Pricing</th>
+                      <th className="px-6 py-4 text-center">Stock</th>
                       <th className="px-6 py-4 text-right">Actions</th>
                     </tr>
                   </thead>
@@ -848,6 +856,13 @@ export const AdminDashboard: React.FC = () => {
                               <span className="text-xs text-stone-400 line-through">MRP: ₹{product.mrp.toLocaleString('en-IN')}</span>
                             )}
                           </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold 
+                              ${product.stock === 0 ? 'bg-red-100 text-red-700' : 
+                                product.stock < 5 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
+                              {product.stock}
+                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex justify-end gap-2">
@@ -946,7 +961,7 @@ export const AdminDashboard: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-stone-700 mb-1">Selling Price (₹)</label>
                   <input 
@@ -966,7 +981,17 @@ export const AdminDashboard: React.FC = () => {
                     placeholder="Optional"
                     className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-royal-500"
                   />
-                  <p className="text-[10px] text-stone-500 mt-1">Leave blank or set equal to price for no discount</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-stone-800 mb-1">Stock Qty</label>
+                  <input 
+                    type="number" 
+                    min="0"
+                    required
+                    value={newProduct.stock || ''}
+                    onChange={e => setNewProduct({...newProduct, stock: parseInt(e.target.value)})}
+                    className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-royal-500 bg-stone-50"
+                  />
                 </div>
               </div>
 

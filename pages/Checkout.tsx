@@ -4,6 +4,7 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useOrders } from '../context/OrderContext';
+import { useProducts } from '../context/ProductContext';
 import { ArrowLeft, CreditCard, Truck, CheckCircle, ShieldCheck } from 'lucide-react';
 import { OrderStatus } from '../types';
 
@@ -18,6 +19,7 @@ export const Checkout: React.FC = () => {
   const { cart, cartSubtotal, discountAmount, finalTotal, appliedCoupon, clearCart } = useCart();
   const { user, isAuthenticated, isAdmin } = useAuth();
   const { addOrder } = useOrders();
+  const { updateProductStock } = useProducts();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -53,7 +55,7 @@ export const Checkout: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const createOrder = (paymentId?: string) => {
+  const createOrder = async (paymentId?: string) => {
       // Create Items Summary String
       const itemsSummary = cart.map(item => `${item.name} (${item.quantity})`).join(', ');
 
@@ -78,6 +80,12 @@ export const Checkout: React.FC = () => {
       };
 
       addOrder(newOrder);
+
+      // Deduct Stock
+      for (const item of cart) {
+        await updateProductStock(item.id, item.quantity);
+      }
+
       clearCart();
       setIsProcessing(false);
       setIsSuccess(true);
@@ -90,7 +98,7 @@ export const Checkout: React.FC = () => {
     if (paymentMethod === 'cod') {
         // Simple delay for COD
         await new Promise(resolve => setTimeout(resolve, 1500));
-        createOrder();
+        await createOrder();
     } else {
         // RAZORPAY INTEGRATION
         const options = {
