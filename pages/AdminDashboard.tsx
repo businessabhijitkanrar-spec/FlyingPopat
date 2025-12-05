@@ -57,6 +57,10 @@ export const AdminDashboard: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
 
+  // Delete Confirmation State
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<string | null>(null);
+
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [newStatus, setNewStatus] = useState<OrderStatus>('Pending');
   const [statusNote, setStatusNote] = useState('');
@@ -164,6 +168,19 @@ export const AdminDashboard: React.FC = () => {
 
       setShowAddModal(false);
       resetForm();
+    }
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setProductToDelete(id);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    if (productToDelete) {
+      deleteProduct(productToDelete);
+      setShowDeleteConfirm(false);
+      setProductToDelete(null);
     }
   };
 
@@ -874,7 +891,7 @@ export const AdminDashboard: React.FC = () => {
                               <Pencil size={18} />
                             </button>
                             <button 
-                              onClick={() => deleteProduct(product.id)}
+                              onClick={() => handleDeleteClick(product.id)}
                               className="text-stone-400 hover:text-red-600 transition-colors p-2 hover:bg-red-50 rounded-full"
                               title="Delete Product"
                             >
@@ -1126,6 +1143,35 @@ export const AdminDashboard: React.FC = () => {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+           <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 animate-fade-in-down">
+              <div className="flex items-center gap-3 text-red-600 mb-4">
+                 <AlertTriangle size={24} />
+                 <h3 className="font-bold text-lg">Confirm Deletion</h3>
+              </div>
+              <p className="text-stone-600 mb-6">
+                 Are you sure you want to delete this product? This action cannot be undone and will remove it from the catalog immediately.
+              </p>
+              <div className="flex gap-3">
+                 <button 
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="flex-1 py-2 border border-stone-300 rounded-lg text-stone-600 hover:bg-stone-50 font-medium"
+                 >
+                    Cancel
+                 </button>
+                 <button 
+                    onClick={confirmDelete}
+                    className="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium shadow-sm"
+                 >
+                    Delete
+                 </button>
+              </div>
+           </div>
         </div>
       )}
 
