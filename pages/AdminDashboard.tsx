@@ -45,7 +45,7 @@ import { Navigate } from 'react-router-dom';
 
 export const AdminDashboard: React.FC = () => {
   const { user, isAdmin, allUsers } = useAuth();
-  const { products, deleteProduct, addProduct, updateProduct } = useProducts();
+  const { products, deleteProduct, addProduct, updateProduct, updateProductStock } = useProducts();
   const { orders, updateOrderStatus, updateRefundStatus } = useOrders();
   const { feedbacks } = useFeedback();
   const { inquiries, markAsRead, deleteInquiry } = useInquiry();
@@ -888,11 +888,28 @@ export const AdminDashboard: React.FC = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-center">
-                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold 
-                              ${product.stock === 0 ? 'bg-red-100 text-red-700' : 
-                                product.stock < 5 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
-                              {product.stock}
-                           </span>
+                           <div className="flex items-center justify-center gap-1">
+                             <button 
+                                onClick={() => updateProductStock(product.id, 1)}
+                                className="text-stone-400 hover:text-red-600 p-1 rounded-full hover:bg-red-50 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-stone-400"
+                                disabled={product.stock <= 0}
+                                title="Decrease Stock"
+                             >
+                                <MinusCircle size={16} />
+                             </button>
+                             <span className={`min-w-[24px] text-center inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-bold 
+                                ${product.stock === 0 ? 'bg-red-100 text-red-700' : 
+                                  product.stock < 5 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
+                                {product.stock}
+                             </span>
+                             <button 
+                                onClick={() => updateProductStock(product.id, -1)}
+                                className="text-stone-400 hover:text-green-600 p-1 rounded-full hover:bg-green-50"
+                                title="Increase Stock"
+                             >
+                                <Plus size={16} />
+                             </button>
+                           </div>
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex justify-end gap-2">
