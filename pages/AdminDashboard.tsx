@@ -3,11 +3,9 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useProducts } from '../context/ProductContext';
 import { useOrders } from '../context/OrderContext';
-import { useFeedback } from '../context/FeedbackContext';
-import { useInquiry } from '../context/InquiryContext';
 import { useCoupon } from '../context/CouponContext';
 import { isFirebaseConfigured } from '../firebase-config';
-import { ProductCategory, Product, Order, OrderStatus, RefundStatus, Coupon } from '../types';
+import { ProductCategory, Product, Order, OrderStatus, RefundStatus } from '../types';
 import { 
   Package, 
   TrendingUp, 
@@ -22,12 +20,7 @@ import {
   CheckCircle,
   Truck,
   XCircle,
-  Eye,
   MapPin,
-  Phone,
-  Mail,
-  MessageSquare,
-  Star,
   Download,
   Wifi,
   WifiOff,
@@ -35,24 +28,18 @@ import {
   Pencil,
   RefreshCcw,
   MinusCircle,
-  Tag,
-  Inbox,
   TicketPercent,
-  FileText,
   AlertTriangle
 } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
 export const AdminDashboard: React.FC = () => {
-  // ... existing hooks
   const { user, isAdmin, allUsers } = useAuth();
   const { products, deleteProduct, addProduct, updateProduct, updateProductStock, restoreDefaults } = useProducts();
   const { orders, updateOrderStatus, updateRefundStatus } = useOrders();
-  const { feedbacks } = useFeedback();
-  const { inquiries, markAsRead, deleteInquiry } = useInquiry();
   const { coupons, addCoupon, deleteCoupon, toggleCouponStatus } = useCoupon();
   
-  const [activeTab, setActiveTab] = useState<'orders' | 'catalog' | 'customers' | 'feedback' | 'inquiries' | 'coupons'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'catalog' | 'customers' | 'coupons'>('orders');
   
   const [showAddModal, setShowAddModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -376,8 +363,6 @@ export const AdminDashboard: React.FC = () => {
           <button onClick={() => setActiveTab('catalog')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'catalog' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}><Grid size={20} /> Catalog</button>
           <button onClick={() => setActiveTab('customers')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'customers' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}><Users size={20} /> Customers</button>
           <button onClick={() => setActiveTab('coupons')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'coupons' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}><TicketPercent size={20} /> Coupons</button>
-          <button onClick={() => setActiveTab('feedback')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'feedback' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}><MessageSquare size={20} /> Feedbacks</button>
-          <button onClick={() => setActiveTab('inquiries')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'inquiries' ? 'bg-royal-50 text-royal-700' : 'text-stone-600 hover:bg-stone-50'}`}><Inbox size={20} /> Inquiries</button>
         </nav>
         
         <div className="p-6 mt-auto">
@@ -401,8 +386,6 @@ export const AdminDashboard: React.FC = () => {
             {activeTab === 'orders' && 'View and manage customer orders'}
             {activeTab === 'catalog' && 'Update your collection and manage inventory'}
             {activeTab === 'customers' && 'View registered customer details'}
-            {activeTab === 'feedback' && 'Customer reviews and cancellation reasons'}
-            {activeTab === 'inquiries' && 'View messages from Contact Us form'}
             {activeTab === 'coupons' && 'Manage discount codes and promotions'}
           </p>
         </div>
@@ -718,13 +701,6 @@ export const AdminDashboard: React.FC = () => {
               </div>
             </div>
           </div>
-        )}
-
-        {/* Placeholder for Feedback and Inquiries */}
-        {(activeTab === 'feedback' || activeTab === 'inquiries') && (
-            <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-8 text-center text-stone-500">
-                Content for {activeTab} goes here.
-            </div>
         )}
 
       </main>

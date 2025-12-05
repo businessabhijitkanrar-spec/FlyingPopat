@@ -3,14 +3,12 @@ import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useOrders } from '../context/OrderContext';
-import { useFeedback } from '../context/FeedbackContext';
 import { Order, OrderStatus } from '../types';
 import { Package, Truck, CheckCircle, Clock, XCircle, MapPin, ChevronDown, ChevronUp, Star, AlertCircle, X, ArrowLeftRight, Upload, RefreshCcw } from 'lucide-react';
 
 export const MyOrders: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const { orders, cancelOrder, requestReturn } = useOrders();
-  const { addFeedback } = useFeedback();
   
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   
@@ -47,16 +45,7 @@ export const MyOrders: React.FC = () => {
     e.preventDefault();
     if (cancellingOrder && cancellationReason) {
       cancelOrder(cancellingOrder.id);
-      addFeedback({
-        id: Date.now().toString(),
-        orderId: cancellingOrder.id,
-        userId: user.id,
-        userName: user.name,
-        type: 'cancellation',
-        reason: cancellationReason,
-        comment: cancellationComment,
-        date: new Date().toISOString().split('T')[0]
-      });
+      // Removed feedback submission logic
       setCancellingOrder(null);
       setCancellationReason('');
       setCancellationComment('');
@@ -66,16 +55,7 @@ export const MyOrders: React.FC = () => {
   const handleReviewSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (reviewingOrder) {
-      addFeedback({
-        id: Date.now().toString(),
-        orderId: reviewingOrder.id,
-        userId: user.id,
-        userName: user.name,
-        type: 'review',
-        rating: reviewRating,
-        comment: reviewComment,
-        date: new Date().toISOString().split('T')[0]
-      });
+      // Removed feedback submission logic
       setReviewingOrder(null);
       setReviewRating(5);
       setReviewComment('');

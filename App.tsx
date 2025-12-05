@@ -63,7 +63,6 @@ const Footer = () => (
         <h3 className="text-white font-semibold mb-4">Contact</h3>
         <p className="text-sm mb-2">Howrah, West Bengal, India</p>
         <p className="text-sm"><a href="mailto:help.flyingpopat@gmail.com" className="hover:text-royal-500">help.flyingpopat@gmail.com</a></p>
-        <p className="text-sm mt-1"><Link to="/contact" className="hover:text-royal-500 transition-colors underline">Contact Form</Link></p>
         <p className="text-sm mt-4 text-xs opacity-50">© 2024 FlyingPopat. All rights reserved.</p>
       </div>
     </div>
