@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useOrders } from '../context/OrderContext';
 import { useFeedback } from '../context/FeedbackContext';
 import { Order, OrderStatus } from '../types';
-import { Package, Truck, CheckCircle, Clock, XCircle, MapPin, ChevronDown, ChevronUp, Star, AlertCircle, X, RefreshCcw, ArrowLeftRight, Upload, Image as ImageIcon } from 'lucide-react';
+import { Package, Truck, CheckCircle, Clock, XCircle, MapPin, ChevronDown, ChevronUp, Star, AlertCircle, X, ArrowLeftRight, Upload, RefreshCcw } from 'lucide-react';
 
 export const MyOrders: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -150,14 +150,8 @@ export const MyOrders: React.FC = () => {
   return (
     <div className="min-h-screen bg-stone-50 py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-8">
+        <div className="mb-8">
           <h1 className="font-serif text-3xl font-bold text-stone-900">My Orders</h1>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="flex items-center gap-2 px-3 py-2 bg-white border border-stone-200 rounded-lg text-stone-600 hover:bg-stone-50 text-sm font-medium"
-          >
-            <RefreshCcw size={16} /> Refresh Orders
-          </button>
         </div>
 
         {myOrders.length === 0 ? (
