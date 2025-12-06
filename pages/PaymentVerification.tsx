@@ -8,12 +8,6 @@ import { useAuth } from '../context/AuthContext';
 import { CheckCircle, ArrowRight, Loader2, PackageCheck, CreditCard, Lock } from 'lucide-react';
 import { OrderStatus } from '../types';
 
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
-
 export const PaymentVerification: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -25,6 +19,7 @@ export const PaymentVerification: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [showRedirect, setShowRedirect] = useState(false);
 
   // Get data passed from checkout
   const { shippingData, paymentMethod } = location.state || {};
@@ -79,60 +74,18 @@ export const PaymentVerification: React.FC = () => {
     }
   };
 
-  const handleRazorpayPayment = () => {
+  const handlePayUPayment = () => {
     setIsSubmitting(true);
     setError('');
+    setShowRedirect(true);
 
-    // Load Razorpay Script if not present
-    if (!window.Razorpay) {
-        setError("Payment gateway failed to load. Please check internet or try COD.");
-        setIsSubmitting(false);
-        return;
-    }
-
-    const options = {
-      key: process.env.RAZORPAY_KEY_ID || '', // Use env key or empty string
-      amount: finalTotal * 100, // Amount in paise
-      currency: "INR",
-      name: "FlyingPopat",
-      description: "Saree Purchase",
-      image: "https://ui-avatars.com/api/?name=Flying+Popat&background=be185d&color=fff",
-      handler: function (response: any) {
-        // Success Handler
-        createOrder(response.razorpay_payment_id);
-      },
-      prefill: {
-        name: shippingData.name,
-        email: shippingData.email,
-        contact: shippingData.phone
-      },
-      theme: {
-        color: "#be185d"
-      },
-      modal: {
-        ondismiss: function() {
-            setIsSubmitting(false);
-        }
-      }
-    };
-
-    try {
-        const rzp1 = new window.Razorpay(options);
-        rzp1.on('payment.failed', function (response: any){
-            setError(`Payment Failed: ${response.error.description}`);
-            setIsSubmitting(false);
-        });
-        rzp1.open();
-    } catch (e) {
-        // If key is missing or invalid, offer simulated success for demo purposes
-        console.warn("Razorpay Init Failed (likely missing key). Simulating success.");
-        if (confirm("Razorpay Key missing in demo. Simulate successful payment?")) {
-            setTimeout(() => createOrder(`pay_simulated_${Date.now()}`), 1000);
-        } else {
-            setIsSubmitting(false);
-            setError("Payment cancelled or configured incorrectly.");
-        }
-    }
+    // Simulate PayU Redirect
+    setTimeout(() => {
+        // Simulate Success Callback
+        const simulatedPaymentId = `payu_${Math.random().toString(36).substr(2, 9)}`;
+        setShowRedirect(false);
+        createOrder(simulatedPaymentId);
+    }, 2500);
   };
 
   const handleCODConfirm = () => {
@@ -153,8 +106,8 @@ export const PaymentVerification: React.FC = () => {
             Thank you for your purchase, {shippingData.name}.
           </p>
           <p className="text-sm text-stone-500 mb-6">
-            {paymentMethod === 'online' 
-                ? "Payment successfully received. Your order is being processed."
+            {paymentMethod === 'payu' 
+                ? "Payment successfully received via PayU. Your order is being processed."
                 : "Your order will be shipped soon. Please pay cash on delivery."
             }
           </p>
@@ -176,18 +129,18 @@ export const PaymentVerification: React.FC = () => {
           <div className="bg-royal-900 text-white p-6 text-center">
             <h1 className="font-serif text-2xl font-bold">Confirm & Pay</h1>
             <p className="text-royal-200 text-sm mt-1">
-                {paymentMethod === 'online' ? 'Secure Online Payment' : 'Cash on Delivery'}
+                {paymentMethod === 'payu' ? 'Secure Payment via PayU' : 'Cash on Delivery'}
             </p>
           </div>
 
           <div className="p-8 space-y-8">
             
             <div className="text-center space-y-4">
-                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-2 ${paymentMethod === 'online' ? 'bg-blue-50 text-blue-600' : 'bg-green-50 text-green-600'}`}>
-                    {paymentMethod === 'online' ? <CreditCard size={32} /> : <PackageCheck size={32} />}
+                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-2 ${paymentMethod === 'payu' ? 'bg-blue-50 text-blue-600' : 'bg-green-50 text-green-600'}`}>
+                    {paymentMethod === 'payu' ? <CreditCard size={32} /> : <PackageCheck size={32} />}
                 </div>
                 <h3 className="text-xl font-bold text-stone-900">
-                    {paymentMethod === 'online' ? 'Complete Your Payment' : 'You\'re almost done!'}
+                    {paymentMethod === 'payu' ? 'Complete Your Payment' : 'You\'re almost done!'}
                 </h3>
                 <p className="text-stone-600">
                     Total Payable Amount: <span className="font-bold text-stone-900">₹{finalTotal.toLocaleString('en-IN')}</span>
@@ -202,22 +155,30 @@ export const PaymentVerification: React.FC = () => {
             {error && <p className="text-red-500 text-sm text-center bg-red-50 p-2 rounded">{error}</p>}
 
             <div className="pt-2">
-              {paymentMethod === 'online' ? (
-                  <button 
-                    onClick={handleRazorpayPayment}
-                    disabled={isSubmitting}
-                    className="w-full bg-royal-700 text-white py-4 rounded-xl font-bold hover:bg-royal-800 transition-colors shadow-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="animate-spin" size={20} /> Processing...
-                      </>
-                    ) : (
-                      <>
-                        Pay ₹{finalTotal.toLocaleString('en-IN')} Now <Lock size={18} />
-                      </>
-                    )}
-                  </button>
+              {paymentMethod === 'payu' ? (
+                  showRedirect ? (
+                      <div className="text-center py-6">
+                          <Loader2 className="animate-spin mx-auto text-royal-700 mb-3" size={32} />
+                          <p className="text-stone-600 font-medium">Redirecting to PayU Secure Gateway...</p>
+                          <p className="text-xs text-stone-400 mt-2">Please do not close this window.</p>
+                      </div>
+                  ) : (
+                      <button 
+                        onClick={handlePayUPayment}
+                        disabled={isSubmitting}
+                        className="w-full bg-royal-700 text-white py-4 rounded-xl font-bold hover:bg-royal-800 transition-colors shadow-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="animate-spin" size={20} /> Processing...
+                          </>
+                        ) : (
+                          <>
+                            Pay ₹{finalTotal.toLocaleString('en-IN')} Now <Lock size={18} />
+                          </>
+                        )}
+                      </button>
+                  )
               ) : (
                   <button 
                     onClick={handleCODConfirm}
@@ -236,12 +197,14 @@ export const PaymentVerification: React.FC = () => {
                   </button>
               )}
               
-              <button 
-                onClick={() => navigate('/checkout')}
-                className="w-full mt-4 py-2 text-stone-500 hover:text-stone-800 text-sm font-medium"
-              >
-                Cancel and Return to Checkout
-              </button>
+              {!showRedirect && (
+                  <button 
+                    onClick={() => navigate('/checkout')}
+                    className="w-full mt-4 py-2 text-stone-500 hover:text-stone-800 text-sm font-medium"
+                  >
+                    Cancel and Return to Checkout
+                  </button>
+              )}
             </div>
 
           </div>

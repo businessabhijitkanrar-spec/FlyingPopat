@@ -94,7 +94,7 @@ export interface Order {
   discount?: number;
   couponCode?: string;
   itemsSummary: string;
-  paymentMethod: 'cod' | 'online';
+  paymentMethod: 'cod' | 'online' | 'payu'; // Added payu
   paymentId?: string; // Transaction ID from gateway
 }
 

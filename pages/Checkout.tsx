@@ -20,7 +20,7 @@ export const Checkout: React.FC = () => {
     state: '',
   });
 
-  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'online'>('online');
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'payu'>('payu');
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Protected Route Check
@@ -166,23 +166,23 @@ export const Checkout: React.FC = () => {
                 </h3>
                 
                 <div className="space-y-4">
-                  {/* Razorpay Option */}
-                  <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'online' ? 'border-royal-700 bg-royal-50 ring-1 ring-royal-700' : 'border-stone-200 hover:bg-stone-50'}`}>
+                  {/* PayU Option */}
+                  <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'payu' ? 'border-royal-700 bg-royal-50 ring-1 ring-royal-700' : 'border-stone-200 hover:bg-stone-50'}`}>
                     <input 
                       type="radio" 
                       name="payment" 
-                      value="online" 
-                      checked={paymentMethod === 'online'}
-                      onChange={() => setPaymentMethod('online')}
+                      value="payu" 
+                      checked={paymentMethod === 'payu'}
+                      onChange={() => setPaymentMethod('payu')}
                       className="w-5 h-5 text-royal-700 border-stone-300 focus:ring-royal-500"
                     />
                     <div className="ml-4 flex items-center gap-3 w-full">
-                      <div className="p-2 bg-royal-100 text-royal-700 rounded-full">
-                        <Smartphone size={20} />
+                      <div className="p-2 bg-green-100 text-green-700 rounded-full">
+                        <ShieldCheck size={20} />
                       </div>
                       <div className="flex-1">
-                        <span className="block text-sm font-bold text-stone-900">Online Payment</span>
-                        <span className="block text-xs text-stone-500">UPI, Cards, Netbanking (Razorpay)</span>
+                        <span className="block text-sm font-bold text-stone-900">PayU Payment Gateway</span>
+                        <span className="block text-xs text-stone-500">Cards, UPI, Netbanking, Wallets</span>
                       </div>
                       <div className="flex gap-1">
                          <div className="h-4 w-8 bg-blue-100 rounded"></div>
@@ -202,7 +202,7 @@ export const Checkout: React.FC = () => {
                       className="w-5 h-5 text-royal-700 border-stone-300 focus:ring-royal-500"
                     />
                     <div className="ml-4 flex items-center gap-3">
-                      <div className="p-2 bg-green-100 text-green-700 rounded-full">
+                      <div className="p-2 bg-stone-100 text-stone-700 rounded-full">
                         <Banknote size={20} />
                       </div>
                       <div>
@@ -268,7 +268,7 @@ export const Checkout: React.FC = () => {
                 >
                   {isProcessing ? 'Processing...' : (
                     <>
-                      {paymentMethod === 'online' ? 'Proceed to Payment' : 'Review COD Order'} <ArrowRight size={18} />
+                      {paymentMethod === 'payu' ? 'Pay via PayU' : 'Place COD Order'} <ArrowRight size={18} />
                     </>
                   )}
                 </button>
