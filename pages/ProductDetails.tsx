@@ -109,7 +109,7 @@ export const ProductDetails: React.FC = () => {
             <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-stone-100 shadow-lg relative group">
               <img 
                 src={selectedImage} 
-                alt={product.name} 
+                alt={product.imageAlt || product.name} 
                 className={`w-full h-full object-cover transition-transform duration-700 hover:scale-105 ${isOutOfStock ? 'grayscale opacity-70' : ''}`}
               />
               

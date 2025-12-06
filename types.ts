@@ -11,6 +11,7 @@ export interface Product {
   category: string; // Changed from enum to string to allow flexibility, but we will still use the enum for dropdowns
   image: string; // Main image for backward compatibility
   images?: string[]; // Array of up to 3 images
+  imageAlt?: string; // SEO Alt Text
   colors: string[];
   fabric: string;
   occasion: string[];
