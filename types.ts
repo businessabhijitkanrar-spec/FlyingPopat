@@ -2,6 +2,7 @@
 export interface Product {
   id: string;
   name: string;
+  slug?: string; // SEO Friendly URL identifier
   description: string;
   price: number; // Selling Price
   mrp?: number;  // Maximum Retail Price

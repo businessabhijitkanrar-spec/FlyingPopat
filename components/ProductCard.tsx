@@ -20,22 +20,24 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     addToCart(product);
   };
 
+  // Logic: Use Slug if available, otherwise ID
+  const linkPath = `/product/${product.slug || product.id}`;
+
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    // Construct the URL for the product. Handles HashRouter correctly.
-    const url = `${window.location.origin}${window.location.pathname}#/product/${product.id}`;
+    // Construct the URL using HashRouter
+    const url = `${window.location.origin}${window.location.pathname}#${linkPath}`;
     
     if (navigator.share) {
       try {
         await navigator.share({
           title: product.name,
-          text: `Check out this amazing ${product.name} on Vastra AI!`,
+          text: `Check out this amazing ${product.name} on FlyingPopat!`,
           url: url,
         });
       } catch (err) {
-        // User cancelled share
         console.debug('Share cancelled');
       }
     } else {
@@ -48,13 +50,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     }
   };
 
-  // Calculate discount
   const discount = product.mrp && product.mrp > product.price 
     ? Math.round(((product.mrp - product.price) / product.mrp) * 100) 
     : 0;
 
   return (
-    <Link to={`/product/${product.id}`} className="group block bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-100">
+    <Link to={linkPath} className="group block bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-100">
       <div className="relative aspect-[3/4] overflow-hidden bg-stone-100">
         
         <img 
@@ -66,7 +67,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 pointer-events-none" />
         
-        {/* Badges / Tags */}
         <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
           {product.tags && product.tags.map(tag => (
              <span key={tag} className="bg-gold-500 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider animate-glow shadow-sm">
@@ -80,7 +80,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           )}
         </div>
 
-        {/* Share Button - Top Right */}
         <button 
           onClick={handleShare}
           className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-stone-600 p-2.5 rounded-full shadow-md transition-all duration-300 delay-75 hover:bg-royal-700 hover:text-white z-20 opacity-100 translate-y-0 lg:opacity-0 lg:-translate-y-2 lg:group-hover:opacity-100 lg:group-hover:translate-y-0"

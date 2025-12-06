@@ -8,14 +8,15 @@ import { ShoppingBag, ArrowLeft, Truck, ShieldCheck, RefreshCw, ChevronLeft, Che
 import { Schema } from '../components/Schema';
 
 export const ProductDetails: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ id: string }>(); // 'id' here can be the ID OR the slug
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { products } = useProducts();
   const { isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState<'desc' | 'details' | 'care'>('desc');
   
-  const product = products.find((p) => p.id === id);
+  // Try to find by ID first, then by slug
+  const product = products.find((p) => p.id === id || p.slug === id);
   
   // Handle multiple images
   const images = product?.images && product.images.length > 0 ? product.images : (product ? [product.image] : []);
@@ -44,17 +45,15 @@ export const ProductDetails: React.FC = () => {
     "image": images,
     "description": product.description,
     "sku": product.id,
+    "url": window.location.href, // This will now reflect the slug URL if used
     "brand": {
       "@type": "Brand",
       "name": "FlyingPopat"
     },
     "offers": {
       "@type": "Offer",
-      "url": window.location.href,
       "priceCurrency": "INR",
       "price": product.price,
-      "priceValidUntil": "2025-12-31",
-      "itemCondition": "https://schema.org/NewCondition",
       "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       "seller": {
         "@type": "Organization",
@@ -128,19 +127,16 @@ export const ProductDetails: React.FC = () => {
                   <button 
                     onClick={handlePrevImage}
                     className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-stone-800 p-2 rounded-full shadow-md backdrop-blur-sm transition-all hover:scale-110 z-10 opacity-0 group-hover:opacity-100"
-                    title="Previous Image"
                   >
                     <ChevronLeft size={24} />
                   </button>
                   <button 
                     onClick={handleNextImage}
                     className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-stone-800 p-2 rounded-full shadow-md backdrop-blur-sm transition-all hover:scale-110 z-10 opacity-0 group-hover:opacity-100"
-                    title="Next Image"
                   >
                     <ChevronRight size={24} />
                   </button>
                   
-                  {/* Slide Indicator Dots */}
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
                     {images.map((_, idx) => (
                       <div 
@@ -152,13 +148,10 @@ export const ProductDetails: React.FC = () => {
                 </>
               )}
 
-              {/* Overlays for tags */}
+              {/* Badges */}
               <div className="absolute top-4 left-4 flex flex-col gap-2">
                  {product.tags?.map(tag => (
-                   <span 
-                    key={tag} 
-                    className="text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm bg-gold-500 text-white animate-glow"
-                   >
+                   <span key={tag} className="text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm bg-gold-500 text-white animate-glow">
                       {tag}
                    </span>
                  ))}
@@ -191,9 +184,7 @@ export const ProductDetails: React.FC = () => {
                 {product.mrp && product.mrp > product.price && (
                   <>
                     <p className="text-xl text-stone-400 line-through">₹{product.mrp.toLocaleString('en-IN')}</p>
-                    <span className="text-lg font-bold text-green-600">
-                      ({discount}% OFF)
-                    </span>
+                    <span className="text-lg font-bold text-green-600">({discount}% OFF)</span>
                   </>
                 )}
               </div>
@@ -215,113 +206,57 @@ export const ProductDetails: React.FC = () => {
                  )}
               </div>
 
-              {/* Color Selection (Simulated) */}
               <div className="mb-8">
                 <h3 className="text-sm font-semibold mb-3">Available Colors</h3>
                 <div className="flex gap-3">
                   {product.colors.map((color) => (
                     <div key={color} className="group relative">
-                        <div 
-                        className={`w-8 h-8 rounded-full border border-stone-200 cursor-pointer shadow-sm`}
-                        style={{ backgroundColor: color.toLowerCase() }}
-                        title={color}
-                        />
-                        <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs opacity-0 group-hover:opacity-100 whitespace-nowrap">{color}</span>
+                        <div className="w-8 h-8 rounded-full border border-stone-200 cursor-pointer shadow-sm" style={{ backgroundColor: color.toLowerCase() }} title={color} />
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Action Buttons */}
               {!isAdmin && (
                 <div className="flex gap-4 mb-10">
-                  <button 
-                    onClick={handleAddToCart}
-                    disabled={isOutOfStock}
-                    className={`flex-1 text-white py-4 px-8 rounded-full font-bold transition-all shadow-lg flex items-center justify-center gap-2 
-                      ${isOutOfStock 
-                        ? 'bg-stone-300 cursor-not-allowed shadow-none' 
-                        : 'bg-royal-700 hover:bg-royal-800 hover:shadow-xl'}`}
-                  >
+                  <button onClick={handleAddToCart} disabled={isOutOfStock} className={`flex-1 text-white py-4 px-8 rounded-full font-bold transition-all shadow-lg flex items-center justify-center gap-2 ${isOutOfStock ? 'bg-stone-300 cursor-not-allowed shadow-none' : 'bg-royal-700 hover:bg-royal-800 hover:shadow-xl'}`}>
                     <ShoppingBag size={20} /> {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
-                  </button>
-                  <button className="p-4 border border-stone-300 rounded-full hover:bg-stone-50 transition-colors">
-                    <svg className="w-6 h-6 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
                   </button>
                 </div>
               )}
             </div>
 
-            {/* Info Tabs */}
             <div className="mt-auto">
               <div className="flex border-b border-stone-200 mb-4">
                 {(['desc', 'details', 'care'] as const).map((tab) => (
-                   <button 
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`pb-3 px-4 text-sm font-semibold capitalize transition-colors ${activeTab === tab ? 'text-royal-700 border-b-2 border-royal-700' : 'text-stone-500 hover:text-stone-800'}`}
-                  >
+                   <button key={tab} onClick={() => setActiveTab(tab)} className={`pb-3 px-4 text-sm font-semibold capitalize transition-colors ${activeTab === tab ? 'text-royal-700 border-b-2 border-royal-700' : 'text-stone-500 hover:text-stone-800'}`}>
                     {tab === 'desc' ? 'Description' : tab}
                   </button>
                 ))}
               </div>
-              {/* Increased height to accommodate full description */}
               <div className="min-h-[16rem] text-sm text-stone-600 leading-relaxed overflow-y-auto">
                  {activeTab === 'desc' && (
-                    <div 
-                      className="prose prose-sm prose-stone max-w-none"
-                      dangerouslySetInnerHTML={{ 
-                        __html: product.description.replace(/\n/g, '<br />')
-                      }}
-                    />
+                    <div className="prose prose-sm prose-stone max-w-none" dangerouslySetInnerHTML={{ __html: product.description.replace(/\n/g, '<br />') }} />
                  )}
                  {activeTab === 'details' && (
                     <ul className="list-disc pl-4 space-y-2">
-                        {product.details ? (
-                          product.details.map((detail, index) => <li key={index}>{detail}</li>)
-                        ) : (
-                          <>
-                            <li>Fabric: {product.fabric}</li>
-                            <li>Occasion: {product.occasion.join(', ')}</li>
-                            <li>Length: 6.3 meters (including blouse piece)</li>
-                            <li>Blouse Piece: Included</li>
-                          </>
-                        )}
+                        {product.details ? product.details.map((detail, index) => <li key={index}>{detail}</li>) : <li>Standard Product</li>}
                     </ul>
                  )}
                  {activeTab === 'care' && (
                     <ul className="list-disc pl-4 space-y-2">
-                        {product.care ? (
-                          product.care.map((item, index) => <li key={index}>{item}</li>)
-                        ) : (
-                          <>
-                            <li>Dry clean only to maintain the luster.</li>
-                            <li>Store in a muslin cloth to allow the fabric to breathe.</li>
-                            <li>Avoid direct sunlight when drying to prevent color fading.</li>
-                            <li>Iron on low heat with a protective cloth.</li>
-                          </>
-                        )}
+                        {product.care ? product.care.map((item, index) => <li key={index}>{item}</li>) : <li>Dry Clean Only</li>}
                     </ul>
                  )}
               </div>
             </div>
-
+            
             {/* Trust Badges */}
             <div className="grid grid-cols-3 gap-4 border-t border-stone-200 pt-6 mt-6">
-                <div className="flex flex-col items-center text-center gap-2">
-                    <Truck size={20} className="text-royal-700"/>
-                    <span className="text-xs font-medium">Free Shipping</span>
-                </div>
-                <div className="flex flex-col items-center text-center gap-2">
-                    <ShieldCheck size={20} className="text-royal-700"/>
-                    <span className="text-xs font-medium">Authentic Silk</span>
-                </div>
-                <div className="flex flex-col items-center text-center gap-2">
-                    <RefreshCw size={20} className="text-royal-700"/>
-                    <span className="text-xs font-medium">7 Day Returns</span>
-                </div>
+                <div className="flex flex-col items-center text-center gap-2"><Truck size={20} className="text-royal-700"/><span className="text-xs font-medium">Free Shipping</span></div>
+                <div className="flex flex-col items-center text-center gap-2"><ShieldCheck size={20} className="text-royal-700"/><span className="text-xs font-medium">Authentic Silk</span></div>
+                <div className="flex flex-col items-center text-center gap-2"><RefreshCw size={20} className="text-royal-700"/><span className="text-xs font-medium">7 Day Returns</span></div>
             </div>
-
           </div>
         </div>
       </div>

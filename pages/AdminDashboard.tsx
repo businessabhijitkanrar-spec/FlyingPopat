@@ -36,7 +36,7 @@ import {
   Italic,
   List,
   MessageSquare,
-  Mail
+  Link as LinkIcon
 } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
@@ -75,6 +75,7 @@ export const AdminDashboard: React.FC = () => {
   // Form State
   const [newProduct, setNewProduct] = useState<Partial<Product>>({
     name: '',
+    slug: '',
     price: 0,
     mrp: 0,
     stock: 0, 
@@ -113,9 +114,32 @@ export const AdminDashboard: React.FC = () => {
     return url;
   };
 
+  const generateSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const name = e.target.value;
+    // Auto-generate slug if it's empty or matches the previous auto-generated slug
+    // For simplicity, we update it if the current slug looks auto-generated or is empty
+    const currentSlug = newProduct.slug || '';
+    const autoSlug = generateSlug(newProduct.name || '');
+    
+    // If slug is empty or matches what the slug SHOULD be for the old name, update it
+    if (!currentSlug || currentSlug === autoSlug) {
+        setNewProduct(prev => ({ ...prev, name, slug: generateSlug(name) }));
+    } else {
+        setNewProduct(prev => ({ ...prev, name }));
+    }
+  };
+
   const resetForm = () => {
     setNewProduct({
       name: '',
+      slug: '',
       price: 0,
       mrp: 0,
       stock: 0,
@@ -149,8 +173,12 @@ export const AdminDashboard: React.FC = () => {
       let finalMrp = newProduct.mrp ? Number(newProduct.mrp) : 0;
       if (finalMrp < finalPrice) finalMrp = finalPrice;
 
+      // Ensure slug exists
+      const finalSlug = newProduct.slug || generateSlug(newProduct.name);
+
       const productData: Product = {
         ...newProduct as Product,
+        slug: finalSlug,
         price: finalPrice,
         mrp: finalMrp,
         stock: Number(newProduct.stock) || 0,
@@ -564,7 +592,10 @@ export const AdminDashboard: React.FC = () => {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-4">
                             <img src={product.image} alt="" className="w-10 h-10 rounded object-cover bg-stone-100" />
-                            <span className="font-medium text-stone-900">{product.name}</span>
+                            <div>
+                                <div className="font-medium text-stone-900">{product.name}</div>
+                                {product.slug && <div className="text-xs text-stone-400 font-mono">/{product.slug}</div>}
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -838,10 +869,31 @@ export const AdminDashboard: React.FC = () => {
                 <form onSubmit={handleSaveProduct} className="space-y-6">
                    {/* Product Name & Pricing */}
                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
+                      <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-stone-700 mb-1">Product Name</label>
-                        <input type="text" required value={newProduct.name} onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none" />
+                        <input type="text" required value={newProduct.name} onChange={handleNameChange} className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-royal-500 focus:outline-none" />
                       </div>
+                      
+                      {/* URL Slug Input */}
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-stone-700 mb-1 flex items-center gap-2">
+                            <LinkIcon size={14} className="text-royal-700"/> URL Slug (SEO Friendly)
+                        </label>
+                        <div className="flex rounded-lg shadow-sm">
+                            <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-stone-300 bg-stone-50 text-stone-500 text-sm">
+                                .../product/
+                            </span>
+                            <input 
+                                type="text" 
+                                value={newProduct.slug} 
+                                onChange={(e) => setNewProduct({...newProduct, slug: e.target.value})} 
+                                placeholder="red-banarasi-saree"
+                                className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-lg border border-stone-300 focus:ring-royal-500 focus:border-royal-500 sm:text-sm font-mono text-stone-600" 
+                            />
+                        </div>
+                        <p className="mt-1 text-xs text-stone-500">Leave blank to auto-generate from name.</p>
+                      </div>
+
                       <div className="grid grid-cols-2 gap-2">
                          <div>
                             <label className="block text-sm font-medium text-stone-700 mb-1">Selling Price</label>
@@ -875,7 +927,8 @@ export const AdminDashboard: React.FC = () => {
                       </div>
                    </div>
 
-                   {/* Tags */}
+                   {/* Tags, Images, Description, etc. (Existing Code) */}
+                   {/* ... */}
                    <div>
                       <label className="block text-sm font-medium text-stone-700 mb-2">Tags</label>
                       <div className="flex gap-2">
