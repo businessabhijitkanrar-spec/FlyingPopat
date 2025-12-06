@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, CreditCard, Truck, ShieldCheck, ArrowRight } from 'lucide-react';
+import { ArrowLeft, CreditCard, Truck, ShieldCheck, ArrowRight, Banknote, Smartphone } from 'lucide-react';
 
 export const Checkout: React.FC = () => {
   const { cart, cartSubtotal, discountAmount, finalTotal, appliedCoupon } = useCart();
@@ -20,6 +20,7 @@ export const Checkout: React.FC = () => {
     state: '',
   });
 
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'online'>('online');
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Protected Route Check
@@ -45,12 +46,12 @@ export const Checkout: React.FC = () => {
     e.preventDefault();
     setIsProcessing(true);
 
-    // Instead of creating order directly via Razorpay, navigate to Payment Verification
-    // Pass form data and total to the next page via state
+    // Navigate to Confirmation Page with selected payment method
     navigate('/payment-verification', { 
         state: { 
             shippingData: formData,
-            totalAmount: finalTotal
+            totalAmount: finalTotal,
+            paymentMethod: paymentMethod
         } 
     });
     
@@ -165,18 +166,49 @@ export const Checkout: React.FC = () => {
                 </h3>
                 
                 <div className="space-y-4">
-                  <label className="flex items-center p-4 border border-royal-700 bg-royal-50 rounded-xl cursor-pointer transition-all">
+                  {/* Razorpay Option */}
+                  <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'online' ? 'border-royal-700 bg-royal-50 ring-1 ring-royal-700' : 'border-stone-200 hover:bg-stone-50'}`}>
                     <input 
                       type="radio" 
                       name="payment" 
-                      value="upi" 
-                      checked={true}
-                      readOnly
+                      value="online" 
+                      checked={paymentMethod === 'online'}
+                      onChange={() => setPaymentMethod('online')}
                       className="w-5 h-5 text-royal-700 border-stone-300 focus:ring-royal-500"
                     />
-                    <div className="ml-4">
-                      <span className="block text-sm font-bold text-stone-900">Manual UPI Payment</span>
-                      <span className="block text-xs text-stone-500">Scan QR or Pay to UPI ID on next step</span>
+                    <div className="ml-4 flex items-center gap-3 w-full">
+                      <div className="p-2 bg-royal-100 text-royal-700 rounded-full">
+                        <Smartphone size={20} />
+                      </div>
+                      <div className="flex-1">
+                        <span className="block text-sm font-bold text-stone-900">Online Payment</span>
+                        <span className="block text-xs text-stone-500">UPI, Cards, Netbanking (Razorpay)</span>
+                      </div>
+                      <div className="flex gap-1">
+                         <div className="h-4 w-8 bg-blue-100 rounded"></div>
+                         <div className="h-4 w-8 bg-orange-100 rounded"></div>
+                      </div>
+                    </div>
+                  </label>
+
+                  {/* COD Option */}
+                  <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-royal-700 bg-royal-50 ring-1 ring-royal-700' : 'border-stone-200 hover:bg-stone-50'}`}>
+                    <input 
+                      type="radio" 
+                      name="payment" 
+                      value="cod" 
+                      checked={paymentMethod === 'cod'}
+                      onChange={() => setPaymentMethod('cod')}
+                      className="w-5 h-5 text-royal-700 border-stone-300 focus:ring-royal-500"
+                    />
+                    <div className="ml-4 flex items-center gap-3">
+                      <div className="p-2 bg-green-100 text-green-700 rounded-full">
+                        <Banknote size={20} />
+                      </div>
+                      <div>
+                        <span className="block text-sm font-bold text-stone-900">Cash on Delivery</span>
+                        <span className="block text-xs text-stone-500">Pay with cash when your order arrives</span>
+                      </div>
                     </div>
                   </label>
                 </div>
@@ -236,13 +268,13 @@ export const Checkout: React.FC = () => {
                 >
                   {isProcessing ? 'Processing...' : (
                     <>
-                      Proceed to Payment <ArrowRight size={18} />
+                      {paymentMethod === 'online' ? 'Proceed to Payment' : 'Review COD Order'} <ArrowRight size={18} />
                     </>
                   )}
                 </button>
                 
                 <div className="flex items-center justify-center gap-2 mt-4 text-xs text-stone-400">
-                  <ShieldCheck size={14} /> Secure SSL Encrypted Transaction
+                  <ShieldCheck size={14} /> Secure Order Processing
                 </div>
              </div>
           </div>

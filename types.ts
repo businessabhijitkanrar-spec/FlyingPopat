@@ -95,8 +95,7 @@ export interface Order {
   couponCode?: string;
   itemsSummary: string;
   paymentMethod: 'cod' | 'online';
-  paymentId?: string; // Optional now
-  paymentScreenshot?: string; // New field for manual UPI
+  paymentId?: string; // Transaction ID from gateway
 }
 
 export type FeedbackType = 'cancellation' | 'review';
